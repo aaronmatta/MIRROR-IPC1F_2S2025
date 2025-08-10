@@ -23,10 +23,11 @@ public class Principal {
     }
     
     
-   // MÉTODOS
+   // ______________ MÉTODOS ______________
     
     public void menu(){
-        agregarDatosPrueba();
+        vaciarDatosPersonajes();
+//        agregarDatosPrueba();
         do{
             System.out.println("\n--- MENU PRINCIPAL ---");
             System.out.println("1. Agregar personaje.");
@@ -44,31 +45,50 @@ public class Principal {
             switch(opcion){
                 case 1:
                     System.out.println("\n--- AGREGAR PERSONAJE ---");
-//                    scanner.nextLine();
-//                    
-//                    System.out.print("Nombre: ");
-//                    nombre = scanner.nextLine();
-//                    
-//                    System.out.print("Arma: ");
-//                    arma = scanner.nextLine();
-//                    
-//                    System.out.print("Habilidades: ");
-//                    habilidades = scanner.nextLine();
-//                    
-//                    System.out.print("Nivel: ");
-//                    nivel = scanner.nextLine();
+                    scanner.nextLine();
                     
-                    agregarPersonaje("1",nombre,arma,habilidades,nivel);
+                    System.out.print("Nombre: ");
+                    nombre = scanner.nextLine();
+                    
+                    System.out.print("Arma: ");
+                    arma = scanner.nextLine();
+                    
+                    System.out.print("Habilidades: ");
+                    habilidades = scanner.nextLine();
+                    
+                    System.out.print("Nivel: ");
+                    nivel = scanner.nextLine();
+                    
+                    agregarPersonaje(nombre,arma,habilidades,nivel);
                     break;
                 case 2:
+                    break;
                 case 3:
+                    System.out.println("\n--- ELIMINAR PERSONAJE ---");
+                    scanner.nextLine();
+                    
+                    System.out.print("Ingrese el ID del personaje a eliminar: ");
+                    id = scanner.nextLine();
+                    eliminarPersonaje(id);
+                    break;
                 case 4:
+                    System.out.println("\n--- VER DATO DE UN PERSONAJE ---");
+                    scanner.nextLine();
+                    
+                    System.out.print("Ingrese el ID del personaje a buscar: ");
+                    id = scanner.nextLine();
+                    verDatoPersonaje(id);
+                    break;
                 case 5:
                     verListadoPersonajes();
                     break;
                 case 6:
+                    break;
                 case 7:
+                    break;
                 case 8:
+                    mostrarDatosEstudiante();
+                    break;
                 case 9:
                     break;
                 default:
@@ -79,43 +99,152 @@ public class Principal {
         
     }
     
-    public void agregarPersonaje(String id, String nombre, String arma, String habilidades, String nivel){
-        if(validarIdUnico(id)!=0){
-            
+    public void verDatoPersonaje(String id){
+        if(Integer.parseInt(id)>25){
+            System.out.println("Ingrese un ID válido.");
         }else{
-            System.out.println("La cantidad de personajes agregados está llena (25/25).");
-        };
+            
+            int existeId = buscarId(id);
+            
+            if(existeId!=100){
+                System.out.println("----------- DATOS -----------");
+                System.out.println("ID: "+personaje[existeId][0]);
+                System.out.println("Nombre: "+personaje[existeId][1]);
+                System.out.println("Arma: "+personaje[existeId][2]);
+                System.out.println("Habilidades: "+personaje[existeId][3]);
+                System.out.println("Nivel: "+personaje[existeId][4]);
+ 
+            }else{
+                System.out.println("El ID de ese personaje no existe.");
+            }
+            
+        }
+        
+    }
+    
+    public void eliminarPersonaje(String id){
+        
+        if(Integer.parseInt(id)>25){
+            System.out.println("Ingrese un ID válido.");
+        }else{
+            
+            int existeId = buscarId(id);
+            
+            if(existeId!=100){
+                
+                personaje[existeId][0]="100";
+                personaje[existeId][1]="XX";
+                personaje[existeId][2]="XX";
+                personaje[existeId][3]="XX";
+                personaje[existeId][4]="XX";
+ 
+            }else{
+                System.out.println("El ID de ese personaje no existe.");
+            }
+            
+        }
         
         
+    }
+    
+    public void agregarPersonaje(String nombre, String arma, String habilidades, String nivel){
         
+        int posicion = validarIdUnico(id);
+        boolean validarNombreUnico = validarNombreUnico(nombre);
+        boolean validarNivel = validarNivel(nivel);
         
-//        personaje[0][0] = id;
-//        personaje[0][1] = nombre;
-//        personaje[0][2] = arma;
-//        personaje[0][3] = habilidades;
-//        personaje[0][4] = nivel;
+        if(posicion != 100 && validarNombreUnico==true && validarNivel== true){
+            personaje[posicion][0] = String.valueOf(posicion+1);
+            personaje[posicion][1] = nombre;
+            personaje[posicion][2] = arma;
+            personaje[posicion][3] = habilidades;
+            personaje[posicion][4] = nivel;
+        }
         
+        if(posicion == 100){
+            System.out.println("La cantidad de personajes agregados esta llena. (25/25). Borra algun personaje.");
+        }
+        
+    }
+    
+    public int buscarId(String id){
+        for (int fila=0;fila<25;fila++){
+            if(personaje[fila][0].equals(id)){
+                return fila;
+            }
+        }
+        return 100;
     }
     
     public int validarIdUnico(String id){
         int contador=0;
         for (int fila=0;fila<25;fila++){
+            
             contador=contador+1;
-            if(!(personaje[fila][0].equals(id))){
-                return contador;
+            System.out.println(personaje[fila][0]+"=100");
+            System.out.println(personaje[fila][0].equals("100"));
+            if(personaje[fila][0].equals("100")){ //Si es igual a 100, es porque está vacia.
+                return fila;
             }
+            
         }
         
-        return 0;
+        return 100;
     }
     
-    public void verListadoPersonajes(){
-        for (int fila=0;fila<25;fila++){
-            System.out.print(fila+".\t");
-            for (int col=0;col<5;col++){
-                System.out.print(personaje[fila][col]+ "\t");
+    public boolean validarNombreUnico(String nombre){
+        for(int fila=0;fila<25;fila++){
+            if(personaje[fila][1].equals(nombre)){ //Si el nombre que ingreso el usuario es igual a alguno en la lista le dará error.
+                System.out.println("Este nombre ya esta en uso.");
+                return false;
             }
-            System.out.println("");
+        }
+        return true;
+    }
+    
+    public boolean validarNivel(String nivel){
+        if(!(Integer.parseInt(nivel)>=1 && Integer.parseInt(nivel)<=100)){
+            System.out.println("Ingrese un nivel valido (1-100).");
+            return false;
+        }
+        
+        return true;
+    }
+    
+//    public void verListadoPersonajes(){
+//        for (int fila=0;fila<25;fila++){
+//            System.out.print(fila+".\t");
+//            for (int col=0;col<5;col++){
+//                System.out.print(personaje[fila][col]+ "\t");
+//            }
+//            System.out.println("");
+//        }
+//    }
+    
+    public void verListadoPersonajes(){
+        int contarPersonajes = 0;
+        System.out.println("+-----+----------------------+----------------------+---------------------------+-------+");
+        System.out.println("| ID  | NOMBRE               | ARMA                 | HABILIDADES               | NIVEL |");
+        System.out.println("+-----+----------------------+----------------------+---------------------------+-------+");
+        for (int fila=0;fila<25;fila++){
+            if(!(personaje[fila][0].equals("100"))){
+                System.out.printf("| %-3s | %-20.20s | %-20.20s | %-25.25s | %-5s |%n", 
+                    personaje[fila][0],
+                    personaje[fila][1],
+                    personaje[fila][2],
+                    personaje[fila][3],
+                    personaje[fila][4]
+                
+                );
+                contarPersonajes++;
+            }
+        }
+        if(contarPersonajes == 0){
+            System.out.println("+-----+----------------------+----------------------+---------------------------+-------+");
+            System.out.println("NO HAY PERSONAJES AGREGADOS.");
+        }else{
+            System.out.println("+-----+----------------------+----------------------+---------------------------+-------+");
+            System.out.println("Personajes agregados: ["+contarPersonajes+"/25]");
         }
     }
     
@@ -127,42 +256,38 @@ public class Principal {
         System.out.println("Seccion: F");
     }
     
+    public void vaciarDatosPersonajes(){
+        
+        for (int fila=0;fila<25;fila++){
+            personaje[fila][0] = "100";
+            for (int col=1;col<5;col++){ //Empieza en 1, porque la seccion de ID ya la modifico arriba.
+                personaje[fila][col] = "XX";
+            }
+        }   
+        
+    }
+    
     public void agregarDatosPrueba(){
-        personaje[0][0] = "1";
-        personaje[0][1] = "Nombre01";
-        personaje[0][2] = "Arma01";
-        personaje[0][3] = "Habilidades01";
-        personaje[0][4] = "10";
         
-        personaje[1][0] = "2";
-        personaje[1][1] = "Nombre12";
-        personaje[1][2] = "Arma12";
-        personaje[1][3] = "Habilidades12";
-        personaje[1][4] = "15";
+        for (int fila=0;fila<25;fila++){
+            personaje[fila][0] = String.valueOf(fila+1);
+            personaje[fila][1] = String.valueOf("Nombre"+(fila+1));
+            for (int col=2;col<5;col++){ //Empieza en 2, porque la seccion de ID y Nombre ya la modifico arriba.
+                personaje[fila][col] = "XX";
+            }
+        }
         
-        personaje[2][0] = "3";
-        personaje[2][1] = "Nombre13";
-        personaje[2][2] = "Arma13";
-        personaje[2][3] = "Habilidades13";
-        personaje[2][4] = "20";
+        personaje[7][0]="100";
+        personaje[7][1]="XX";
         
-        personaje[3][0] = "4";
-        personaje[3][1] = "Nombre14";
-        personaje[3][2] = "Arma14";
-        personaje[3][3] = "Habilidades14";
-        personaje[3][4] = "25";
+        personaje[13][0]="100";
+        personaje[13][1]="XX";
         
-        personaje[4][0] = "5";
-        personaje[4][1] = "Nombre15";
-        personaje[4][2] = "Arma15";
-        personaje[4][3] = "Habilidades15";
-        personaje[4][4] = "30";
+        personaje[20][0]="100";
+        personaje[20][1]="XX";
         
-        personaje[5][0] = "6";
-        personaje[5][1] = "Nombre16";
-        personaje[5][2] = "Arma16";
-        personaje[5][3] = "Habilidades16";
-        personaje[5][4] = "35";
+        personaje[8][1]="Segnisasdasdasdsd";
+        
     }
     
     
