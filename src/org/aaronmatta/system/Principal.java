@@ -1,6 +1,8 @@
 package org.aaronmatta.system;
 
 import java.util.Scanner;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 
 public class Principal {
     
@@ -9,9 +11,10 @@ public class Principal {
     Scanner scanner = new Scanner(System.in);
         
     int opcion;
-    String id, nombre, arma, habilidades, nivel;
+    String id, id2, nombre, arma, habilidades, nivel;
         
     String[][] personaje = new String[25][5];
+    String[][] peleas = new String[50][4];
     
     //______________________________________________
     
@@ -22,14 +25,14 @@ public class Principal {
         
     }
     
-    
    // ______________ MÉTODOS ______________
     
     public void menu(){
         vaciarDatosPersonajes();
-//        agregarDatosPrueba();
+        vaciarDatosPeleas();
+        agregarDatosPrueba();
         do{
-            System.out.println("\n--- MENU PRINCIPAL ---");
+            System.out.println("\n--- MENÚ PRINCIPAL ---");
             System.out.println("1. Agregar personaje.");
             System.out.println("2. Modificar personaje.");
             System.out.println("3. Eliminar personaje.");
@@ -80,11 +83,22 @@ public class Principal {
                     verDatoPersonaje(id);
                     break;
                 case 5:
+                    System.out.println("\n--- VER LISTADO DE PERSONAJES ---");
                     verListadoPersonajes();
                     break;
                 case 6:
+                    System.out.println("\n--- REALIZAR PELEA ENTRE PERSONAJES ---");
+                    scanner.nextLine();
+                    
+                    System.out.print("Ingrese el ID del 1° personaje: ");
+                    id = scanner.nextLine();
+                    System.out.print("Ingrese el ID del 2° personaje: ");
+                    id2 = scanner.nextLine();
+                    registrarPelea(id, id2);
                     break;
                 case 7:
+                    System.out.println("\n--- HISTORIAL DE PELEAS ---");
+                    verHistorialPeleas();
                     break;
                 case 8:
                     mostrarDatosEstudiante();
@@ -97,6 +111,35 @@ public class Principal {
             }
         }while(opcion!=9);
         
+    }
+    
+    public boolean registrarPelea(String id1, String id2){
+        
+        int existeId1=buscarId(id1);
+        int existeId2=buscarId(id2);
+        int posicion = validarIdUnicoPeleas();
+        
+        LocalDateTime fecha = LocalDateTime.now();
+        DateTimeFormatter fecha2 = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        String fechaFormateada = fecha.format(fecha2);
+        
+        if(posicion != 100 && existeId1!=100 && existeId2!=100){
+            peleas[posicion][0] = String.valueOf(posicion+1);
+            peleas[posicion][1] = id1;
+            peleas[posicion][2] = id2;
+            peleas[posicion][3] = fechaFormateada;
+            return true;
+        }
+        if (buscarId(id1)==100){
+            System.out.println("El ID del 1° personaje no es válido.");
+        }
+        if (buscarId(id2)==100){
+            System.out.println("El ID del 2° personaje no es válido."); 
+        }
+        if (posicion==100){
+            System.out.println("La cantidad de peleas agregadas esta llena. (50/50). Borra algun personaje para liberar espacio.");
+        }
+        return false;
     }
     
     public void verDatoPersonaje(String id){
@@ -144,12 +187,11 @@ public class Principal {
             
         }
         
-        
     }
     
     public void agregarPersonaje(String nombre, String arma, String habilidades, String nivel){
         
-        int posicion = validarIdUnico(id);
+        int posicion = validarIdUnico();
         boolean validarNombreUnico = validarNombreUnico(nombre);
         boolean validarNivel = validarNivel(nivel);
         
@@ -176,14 +218,24 @@ public class Principal {
         return 100;
     }
     
-    public int validarIdUnico(String id){
-        int contador=0;
+    public int validarIdUnico(){ //Valida el ID para Personajes
+        
         for (int fila=0;fila<25;fila++){
             
-            contador=contador+1;
-            System.out.println(personaje[fila][0]+"=100");
-            System.out.println(personaje[fila][0].equals("100"));
             if(personaje[fila][0].equals("100")){ //Si es igual a 100, es porque está vacia.
+                return fila;
+            }
+            
+        }
+        
+        return 100;
+    }
+    
+    public int validarIdUnicoPeleas(){ //Valida el ID para Peleas
+        
+        for (int fila=0;fila<50;fila++){
+            
+            if(peleas[fila][0].equals("100")){ //Si es igual a 100, es porque está vacia.
                 return fila;
             }
             
@@ -211,15 +263,31 @@ public class Principal {
         return true;
     }
     
-//    public void verListadoPersonajes(){
-//        for (int fila=0;fila<25;fila++){
-//            System.out.print(fila+".\t");
-//            for (int col=0;col<5;col++){
-//                System.out.print(personaje[fila][col]+ "\t");
-//            }
-//            System.out.println("");
-//        }
-//    }
+    public void verHistorialPeleas(){
+        int contarPeleas = 0;
+        System.out.println("+-----+-------------------+-------------------+------------------------------------------+");
+        System.out.println("| COD | ID PERSONAJE 1    | ID PERSONAJE 2    | FECHA Y HORA                             |");
+        System.out.println("+-----+-------------------+-------------------+------------------------------------------+");
+        for (int fila=0;fila<50;fila++){
+            if(!(peleas[fila][0].equals("100"))){
+                System.out.printf("| %-3s | %-17.17s | %-17.17s | %-40.40s |%n", 
+                    peleas[fila][0],
+                    peleas[fila][1],
+                    peleas[fila][2],
+                    peleas[fila][3]
+                
+                );
+                contarPeleas++;
+            }
+        }
+        if(contarPeleas == 0){
+            System.out.println("+-----+-------------------+-------------------+-------------------+----------------------+");
+            System.out.println("NO HAY PELEAS REGISTRADAS.");
+        }else{
+            System.out.println("+-----+-------------------+-------------------+-------------------+----------------------+");
+            System.out.println("Peleas registradas: ["+contarPeleas+"/50]");
+        }
+    }
     
     public void verListadoPersonajes(){
         int contarPersonajes = 0;
@@ -262,6 +330,17 @@ public class Principal {
             personaje[fila][0] = "100";
             for (int col=1;col<5;col++){ //Empieza en 1, porque la seccion de ID ya la modifico arriba.
                 personaje[fila][col] = "XX";
+            }
+        }   
+        
+    }
+    
+    public void vaciarDatosPeleas(){
+        
+        for (int fila=0;fila<50;fila++){
+            peleas[fila][0] = "100";
+            for (int col=1;col<4;col++){ //Empieza en 1, porque la seccion de ID ya la modifico arriba.
+                peleas[fila][col] = "XX";
             }
         }   
         
