@@ -46,18 +46,17 @@ public class Principal {
             System.out.println("8. Ver datos de estudiante.");
             System.out.println("9. Salir");
             System.out.print("Elige una opcion (1-9): ");
-            opcion = scanner.nextInt();
+            opcion = ingresarEntero();
             
             switch(opcion){
                 case 1:
                     System.out.println("\n--- AGREGAR PERSONAJE ---");
-                    scanner.nextLine();
                     
                     System.out.print("Nombre: ");
-                    nombre = scanner.nextLine();
+                    nombre = ingresarTexto();
                     
                     System.out.print("Arma: ");
-                    arma = scanner.nextLine();
+                    arma = ingresarTexto();
                     
                     System.out.println("--------------------------------------------");
                     System.out.println("Separadas por coma (,) hasta un máximo de 5.");
@@ -67,33 +66,30 @@ public class Principal {
                     System.out.println("--------------------------------------------");
                     
                     System.out.print("Nivel: ");
-                    nivel = scanner.nextLine();
+                    nivel = String.valueOf(ingresarEntero());
                     
                     agregarPersonaje(nombre,arma,habilidades,nivel);
                     break;
                 case 2:
                     System.out.println("\n--- MODIFICAR PERSONAJE ---");
-                    scanner.nextLine();
                     
                     System.out.print("Ingrese el ID del personaje a modificar: ");
-                    id = scanner.nextLine();
+                    id = String.valueOf(ingresarEntero());
                     modificarPersonaje(id);
                     
                     break;
                 case 3:
                     System.out.println("\n--- ELIMINAR PERSONAJE ---");
-                    scanner.nextLine();
                     
                     System.out.print("Ingrese el ID del personaje a eliminar: ");
-                    id = scanner.nextLine();
+                    id = String.valueOf(ingresarEntero());
                     eliminarPersonaje(id);
                     break;
                 case 4:
                     System.out.println("\n--- VER DATO DE UN PERSONAJE ---");
-                    scanner.nextLine();
                     
                     System.out.print("Ingrese el ID del personaje a buscar: ");
-                    id = scanner.nextLine();
+                    id = String.valueOf(ingresarEntero());
                     verDatoPersonaje(id);
                     break;
                 case 5:
@@ -102,12 +98,11 @@ public class Principal {
                     break;
                 case 6:
                     System.out.println("\n--- REALIZAR PELEA ENTRE PERSONAJES ---");
-                    scanner.nextLine();
                     
                     System.out.print("Ingrese el ID del 1° personaje: ");
-                    id = scanner.nextLine();
+                    id = String.valueOf(ingresarEntero());
                     System.out.print("Ingrese el ID del 2° personaje: ");
-                    id2 = scanner.nextLine();
+                    id2 = String.valueOf(ingresarEntero());
                     registrarPelea(id, id2);
                     break;
                 case 7:
@@ -148,16 +143,15 @@ public class Principal {
                 System.out.println("4. Regresar.");
                 
                 System.out.print("Ingrese una opción: ");
-                opcion = scanner.nextInt();
+                opcion = ingresarEntero();
                 
                 switch(opcion){
                     case 1: 
                         System.out.println("\n--- EDITAR ARMA---");
-                        scanner.nextLine();
                         
                         System.out.println("\nIngrese la nueva arma.");
                         System.out.print("Nueva arma: ");
-                        arma = scanner.nextLine();
+                        arma = ingresarTexto();
                         
                         
                         personaje[existeId][2] = arma;
@@ -166,7 +160,6 @@ public class Principal {
                         break;
                     case 2:
                         System.out.println("\n--- EDITAR HABILIDADES---");
-                        scanner.nextLine();
                         
                         System.out.println("--------------------------------------------");
                         System.out.println("\nIngrese las nuevas habilidades.");
@@ -183,11 +176,10 @@ public class Principal {
                         break;
                     case 3:
                         System.out.println("\n--- EDITAR NIVEL---");
-                        scanner.nextLine();
                         
                         System.out.println("\nIngrese el nuevo nivel.");
                         System.out.print("Nuevo nivel: ");
-                        nivel = scanner.nextLine();
+                        nivel = String.valueOf(ingresarEntero());
                         
                         boolean validarNivel = validarNivel(nivel);
                         if(validarNivel==true){
@@ -493,6 +485,40 @@ public class Principal {
         
     }
     
+    public int ingresarEntero() {
+        int num = 0;
+        boolean valido = false;
+
+        do {
+            try {
+                String input = scanner.nextLine();
+                num = Integer.parseInt(input);
+                valido = true;
+            } catch (NumberFormatException e) {
+                System.out.print("Error: Debe ingresar un número entero válido. Porfavor ingresar un número válido: ");
+            }
+        } while (!valido);
+
+        return num;
+    }
+    
+    public String ingresarTexto() {
+        String texto = "";
+        boolean valido = false;
+
+        do {
+            texto = scanner.nextLine().trim();
+
+            if (!texto.isEmpty() && texto.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+")) {
+                valido = true;
+            } else {
+                System.out.print("Error: Solo se permiten letras. Porfavor ingresar un texto válido: ");
+            }
+        } while (!valido);
+
+        return texto;
+    }
+    
     public void agregarDatosPrueba(){
         
         for (int fila=0;fila<25;fila++){
@@ -512,7 +538,7 @@ public class Principal {
         personaje[20][0]="100";
         personaje[20][1]="XX";
         
-        personaje[8][1]="Segnisasdasdasdsd";
+        personaje[8][1]="Segnis";
         
     }
     
