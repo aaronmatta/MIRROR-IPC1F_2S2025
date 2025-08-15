@@ -21,6 +21,11 @@ public class Principal {
     public static void main(String[] args) {
         
         Principal programa = new Principal();
+        
+        programa.vaciarDatosPersonajes();
+        programa.vaciarDatosPeleas();
+        //programa.agregarDatosPrueba();
+        
         programa.menu();
         
     }
@@ -28,9 +33,7 @@ public class Principal {
    // ______________ MÉTODOS ______________
     
     public void menu(){
-        vaciarDatosPersonajes();
-        vaciarDatosPeleas();
-        agregarDatosPrueba();
+        
         do{
             System.out.println("\n--- MENÚ PRINCIPAL ---");
             System.out.println("1. Agregar personaje.");
@@ -56,8 +59,12 @@ public class Principal {
                     System.out.print("Arma: ");
                     arma = scanner.nextLine();
                     
+                    System.out.println("--------------------------------------------");
+                    System.out.println("Separadas por coma (,) hasta un máximo de 5.");
                     System.out.print("Habilidades: ");
+                    
                     habilidades = scanner.nextLine();
+                    System.out.println("--------------------------------------------");
                     
                     System.out.print("Nivel: ");
                     nivel = scanner.nextLine();
@@ -65,6 +72,13 @@ public class Principal {
                     agregarPersonaje(nombre,arma,habilidades,nivel);
                     break;
                 case 2:
+                    System.out.println("\n--- MODIFICAR PERSONAJE ---");
+                    scanner.nextLine();
+                    
+                    System.out.print("Ingrese el ID del personaje a modificar: ");
+                    id = scanner.nextLine();
+                    modificarPersonaje(id);
+                    
                     break;
                 case 3:
                     System.out.println("\n--- ELIMINAR PERSONAJE ---");
@@ -113,6 +127,91 @@ public class Principal {
         
     }
     
+    public void modificarPersonaje(String id){
+        
+        int existeId=buscarId(id);
+        
+        if (existeId!=100){
+            
+            do{
+                
+                System.out.println("\n--- GESTION DEL PERSONAJE ---");
+                System.out.println("ID: "+personaje[existeId][0]);
+                System.out.println("Nombre: "+personaje[existeId][1]);
+                System.out.println("Arma: "+personaje[existeId][2]);
+                System.out.println("Habilidades: "+personaje[existeId][3]);
+                System.out.println("Nivel: "+personaje[existeId][4]);
+                System.out.println("------------------------------");
+                System.out.println("1. Editar arma.");
+                System.out.println("2. Editar habilidades.");
+                System.out.println("3. Editar nivel.");
+                System.out.println("4. Regresar.");
+                
+                System.out.print("Ingrese una opción: ");
+                opcion = scanner.nextInt();
+                
+                switch(opcion){
+                    case 1: 
+                        System.out.println("\n--- EDITAR ARMA---");
+                        scanner.nextLine();
+                        
+                        System.out.println("\nIngrese la nueva arma.");
+                        System.out.print("Nueva arma: ");
+                        arma = scanner.nextLine();
+                        
+                        
+                        personaje[existeId][2] = arma;
+                        System.out.println("Arma modificada exitosamente.");
+                        
+                        break;
+                    case 2:
+                        System.out.println("\n--- EDITAR HABILIDADES---");
+                        scanner.nextLine();
+                        
+                        System.out.println("--------------------------------------------");
+                        System.out.println("\nIngrese las nuevas habilidades.");
+                        System.out.println("Separadas por coma (,) hasta un máximo de 5.");
+                        System.out.print("Nuevas habilidades: ");
+                        
+                        habilidades = scanner.nextLine();
+                        String validarHabilidades = validarHabilidades(habilidades); //Valida y retorna las habilidades filtradas.
+        
+                        if(!validarHabilidades.equals("Invalido")){
+                            personaje[existeId][3] = validarHabilidades;
+                        }
+                        
+                        break;
+                    case 3:
+                        System.out.println("\n--- EDITAR NIVEL---");
+                        scanner.nextLine();
+                        
+                        System.out.println("\nIngrese el nuevo nivel.");
+                        System.out.print("Nuevo nivel: ");
+                        nivel = scanner.nextLine();
+                        
+                        boolean validarNivel = validarNivel(nivel);
+                        if(validarNivel==true){
+                            personaje[existeId][4] = nivel;
+                            System.out.println("Nivel modificado exitosamente.");
+                        }
+                        
+                        break;
+                    case 4:
+                        menu();
+                        break;
+                    default:
+                        System.out.println("\nIngrese una de las opciones válidas.");
+                        break;
+                }
+             
+            }while(opcion!=4);
+        }
+        
+        if (existeId==100){
+            System.out.println("El ID ingresado no existe.");
+        }
+    }
+    
     public boolean registrarPelea(String id1, String id2){
         
         int existeId1=buscarId(id1);
@@ -130,10 +229,10 @@ public class Principal {
             peleas[posicion][3] = fechaFormateada;
             return true;
         }
-        if (buscarId(id1)==100){
+        if (existeId1==100){
             System.out.println("El ID del 1° personaje no es válido.");
         }
-        if (buscarId(id2)==100){
+        if (existeId2==100){
             System.out.println("El ID del 2° personaje no es válido."); 
         }
         if (posicion==100){
@@ -174,7 +273,14 @@ public class Principal {
             int existeId = buscarId(id);
             
             if(existeId!=100){
-                
+                for(int fila=0;fila<50;fila++){
+                    if(peleas[fila][1].equals(personaje[existeId][0]) || peleas[fila][2].equals(personaje[existeId][0])){
+                        peleas[fila][0]="100";
+                        peleas[fila][1]="XX";
+                        peleas[fila][2]="XX";
+                        peleas[fila][3]="XX";
+                    }
+                }
                 personaje[existeId][0]="100";
                 personaje[existeId][1]="XX";
                 personaje[existeId][2]="XX";
@@ -194,12 +300,13 @@ public class Principal {
         int posicion = validarIdUnico();
         boolean validarNombreUnico = validarNombreUnico(nombre);
         boolean validarNivel = validarNivel(nivel);
+        String validarHabilidades = validarHabilidades(habilidades); //Valida y retorna las habilidades filtradas.
         
-        if(posicion != 100 && validarNombreUnico==true && validarNivel== true){
+        if(posicion != 100 && validarNombreUnico==true && validarNivel== true && !validarHabilidades.equals("Invalido")){
             personaje[posicion][0] = String.valueOf(posicion+1);
             personaje[posicion][1] = nombre;
             personaje[posicion][2] = arma;
-            personaje[posicion][3] = habilidades;
+            personaje[posicion][3] = validarHabilidades;
             personaje[posicion][4] = nivel;
         }
         
@@ -207,6 +314,46 @@ public class Principal {
             System.out.println("La cantidad de personajes agregados esta llena. (25/25). Borra algun personaje.");
         }
         
+    }
+    
+    public String validarHabilidades(String habilidades){
+        int cantidadNoVacios = 0;
+        int cantidad;
+        int contador = 0;
+        String resultado;
+        
+        String[] habilidadesIngresadas = habilidades.split(",");
+        cantidad = habilidadesIngresadas.length;
+        
+        for(int fila=0;fila<cantidad;fila++){
+            
+            if( !(habilidadesIngresadas[fila].trim().isEmpty()) ){ //Si la posicion del vector NO esta vacía, entoces el contador suma 1.
+                cantidadNoVacios++;
+            }
+        }
+        
+        if(cantidadNoVacios>5){
+            System.out.println("El número máximo de habilidades son 5.");
+            return "Invalido";
+        }
+        
+        String [] habilidadesFiltradas = new String[cantidadNoVacios];
+        
+        if(cantidadNoVacios<=5){
+            
+            for(int fila=0;fila<cantidad;fila++){
+            
+                if( !(habilidadesIngresadas[fila].trim().isEmpty()) ){ //Si la posicion del vector NO esta vacía, entoces se agrega esa habilidad.
+                    habilidadesFiltradas[contador]=habilidadesIngresadas[fila];
+                    contador++;
+                }
+            }
+            
+        }
+        
+        resultado = String.join(",", habilidadesFiltradas);
+        
+        return resultado;
     }
     
     public int buscarId(String id){
@@ -256,7 +403,7 @@ public class Principal {
     
     public boolean validarNivel(String nivel){
         if(!(Integer.parseInt(nivel)>=1 && Integer.parseInt(nivel)<=100)){
-            System.out.println("Ingrese un nivel valido (1-100).");
+            System.out.println("Ingrese un nivel válido (1-100).");
             return false;
         }
         
@@ -291,12 +438,12 @@ public class Principal {
     
     public void verListadoPersonajes(){
         int contarPersonajes = 0;
-        System.out.println("+-----+----------------------+----------------------+---------------------------+-------+");
-        System.out.println("| ID  | NOMBRE               | ARMA                 | HABILIDADES               | NIVEL |");
-        System.out.println("+-----+----------------------+----------------------+---------------------------+-------+");
+        System.out.println("+-----+----------------------+----------------------+--------------------------------------------------+-------+");
+        System.out.println("| ID  | NOMBRE               | ARMA                 | HABILIDADES                                      | NIVEL |");
+        System.out.println("+-----+----------------------+----------------------+--------------------------------------------------+-------+");
         for (int fila=0;fila<25;fila++){
             if(!(personaje[fila][0].equals("100"))){
-                System.out.printf("| %-3s | %-20.20s | %-20.20s | %-25.25s | %-5s |%n", 
+                System.out.printf("| %-3s | %-20.20s | %-20.20s | %-48.48s | %-5s |%n", 
                     personaje[fila][0],
                     personaje[fila][1],
                     personaje[fila][2],
@@ -308,10 +455,10 @@ public class Principal {
             }
         }
         if(contarPersonajes == 0){
-            System.out.println("+-----+----------------------+----------------------+---------------------------+-------+");
+            System.out.println("+-----+----------------------+----------------------+--------------------------------------------------+-------+");
             System.out.println("NO HAY PERSONAJES AGREGADOS.");
         }else{
-            System.out.println("+-----+----------------------+----------------------+---------------------------+-------+");
+            System.out.println("+-----+----------------------+----------------------+--------------------------------------------------+-------+");
             System.out.println("Personajes agregados: ["+contarPersonajes+"/25]");
         }
     }
