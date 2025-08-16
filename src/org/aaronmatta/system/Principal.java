@@ -189,7 +189,6 @@ public class Principal {
                         
                         break;
                     case 4:
-                        menu();
                         break;
                     default:
                         System.out.println("\nIngrese una de las opciones válidas.");
@@ -206,7 +205,7 @@ public class Principal {
     
     public boolean registrarPelea(String id1, String id2){
         
-        int existeId1=buscarId(id1);
+        int existeId1=buscarId(id1); //Busca y retorna la posicion donde se encuentra ese ID si existiera
         int existeId2=buscarId(id2);
         int posicion = validarIdUnicoPeleas();
         
@@ -238,7 +237,7 @@ public class Principal {
             System.out.println("Ingrese un ID válido.");
         }else{
             
-            int existeId = buscarId(id);
+            int existeId = buscarId(id); //Busca y retorna la posicion donde se encuentra ese ID si existiera
             
             if(existeId!=100){
                 System.out.println("----------- DATOS -----------");
@@ -262,7 +261,7 @@ public class Principal {
             System.out.println("Ingrese un ID válido.");
         }else{
             
-            int existeId = buscarId(id);
+            int existeId = buscarId(id); //Busca y retorna la posicion donde se encuentra ese ID si existiera
             
             if(existeId!=100){
                 for(int fila=0;fila<50;fila++){
@@ -294,7 +293,7 @@ public class Principal {
         boolean validarNivel = validarNivel(nivel);
         String validarHabilidades = validarHabilidades(habilidades); //Valida y retorna las habilidades filtradas.
         
-        if(posicion != 100 && validarNombreUnico==true && validarNivel== true && !validarHabilidades.equals("Invalido")){
+        if(posicion != 100 && validarNombreUnico==true && validarNivel== true && !validarHabilidades.equals("Invalido")){ //Si cumple con todas las validaciones se agrega
             personaje[posicion][0] = String.valueOf(posicion+1);
             personaje[posicion][1] = nombre;
             personaje[posicion][2] = arma;
@@ -350,7 +349,7 @@ public class Principal {
     
     public int buscarId(String id){
         for (int fila=0;fila<25;fila++){
-            if(personaje[fila][0].equals(id)){
+            if(personaje[fila][0].equals(id)){ //Si el ID es encontrado retorna la posicion de donde se encuentra
                 return fila;
             }
         }
@@ -394,7 +393,7 @@ public class Principal {
     }
     
     public boolean validarNivel(String nivel){
-        if(!(Integer.parseInt(nivel)>=1 && Integer.parseInt(nivel)<=100)){
+        if(!(Integer.parseInt(nivel)>=1 && Integer.parseInt(nivel)<=100)){ //Rango entre 1-100
             System.out.println("Ingrese un nivel válido (1-100).");
             return false;
         }
@@ -408,7 +407,7 @@ public class Principal {
         System.out.println("| COD | ID PERSONAJE 1    | ID PERSONAJE 2    | FECHA Y HORA                             |");
         System.out.println("+-----+-------------------+-------------------+------------------------------------------+");
         for (int fila=0;fila<50;fila++){
-            if(!(peleas[fila][0].equals("100"))){
+            if(!(peleas[fila][0].equals("100"))){ //No se muestran las IDS 100, o sea las que no contienen datos.
                 System.out.printf("| %-3s | %-17.17s | %-17.17s | %-40.40s |%n", 
                     peleas[fila][0],
                     peleas[fila][1],
@@ -434,7 +433,7 @@ public class Principal {
         System.out.println("| ID  | NOMBRE               | ARMA                 | HABILIDADES                                      | NIVEL |");
         System.out.println("+-----+----------------------+----------------------+--------------------------------------------------+-------+");
         for (int fila=0;fila<25;fila++){
-            if(!(personaje[fila][0].equals("100"))){
+            if(!(personaje[fila][0].equals("100"))){ //No se muestran las IDS 100, o sea las que no contienen datos.
                 System.out.printf("| %-3s | %-20.20s | %-20.20s | %-48.48s | %-5s |%n", 
                     personaje[fila][0],
                     personaje[fila][1],
@@ -541,6 +540,4 @@ public class Principal {
         personaje[8][1]="Segnis";
         
     }
-    
-    
 }
