@@ -1,6 +1,8 @@
 package org.aaronmatta.system;
 
 import java.util.Scanner;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 
 public class Principal {
 
@@ -10,19 +12,19 @@ public class Principal {
        
     String nombre, categoria;
     double precio;
-    int opcion, cantidadStock, codigoUnico;
-    int ultimoCodigo=-1;
+    int opcion, cantidadStock, codigoUnico, cantidad;
+    int ultimoCodigoProducto=-1, ultimoCodigoVenta = -1;
         
     String[][] inventario = new String[100][5];
-    String[][] ventas = new String[100][4];
+    String[][] ventas = new String[100][3];
     String[][] bitacora = new String[100][4];
     
     //______________________________________________
     
     public static void main(String[] args) {
         Principal programa = new Principal();
-        programa.generarEspaciosVacios();
-//        programa.agregarDatosPrueba();
+        programa.generarEspaciosVaciosInventario();
+        programa.agregarDatosPrueba();
         programa.menu();
         
     }
@@ -109,7 +111,7 @@ public class Principal {
                     System.out.println("\n+----------------------------------------+");
                     System.out.println("|            REGISTRAR  VENTA            |");
                     System.out.println("+----------------------------------------+");
-                    
+                    registrarVenta();
                     break;
                 case 5:
                     break;
@@ -123,12 +125,175 @@ public class Principal {
                 case 11: //SOLAMENTE PARA PRUEBAS ESTO SE ELIMINARA DESPUES
                     verListadoProductos();
                     break;
+                case 22: //SOLAMENTE PARA PRUEBAS ESTO SE ELIMINARA DESPUES
+                    verListadoVentas();
+                    break;
                 default:
                     System.out.println("\n[?]    INGRESE UNA DE LAS OPCIONES VÁLIDAS.");
                     break;
             }
         }while(opcion!=8);
         
+    }
+    
+    public void registrarVenta() {
+        
+        String[][] carrito = new String[100][4];
+        carrito = generarEspaciosVaciosCarrito(carrito);
+        
+        int contador = 0, existeId = 0;
+        double total = 0.00, monto = 0.00;
+        
+
+        do{
+            System.out.println("+----------------------------------------+--------------------------------------------------------+");
+            System.out.println("|              OPCIONES                  |                    DETALLE DE VENTA                    |");
+            System.out.println("+----------------------------------------+--------------------------------------------------------+");
+            System.out.println("|     1. Agregar producto                |                                                        |");
+            System.out.println("|     2. Finalizar venta                 | +-----+-----------------------+-------+--------------+ |");
+            System.out.println("|     3. Cancelar                        | | CÓD | PRODUCTO              | CANT  | MONTO        | |");
+            System.out.println("|                                        | +-----+-----------------------+-------+--------------+ |");
+            if(total!=0){
+                for(int fila=0;fila<100;fila++){
+                    if(!(carrito[fila][0].equals("-100"))){
+                        System.out.printf("|                                        | | %-3.3s | %-21.21s | %-5.5s | %-12.12s | |%n", carrito[fila][0], carrito[fila][1], carrito[fila][2], carrito[fila][3]);
+                    }
+                }
+            }else{
+                System.out.printf("|                                        | | %-3.3s | %-21.21s | %-5.5s | %-12.12s | |%n", "", "", "", "");
+            }
+            System.out.println("|                                        | +-----+-----------------------+-------+--------------+ |");
+            System.out.println("|                                        |                                                        |");
+            System.out.printf("| %-38s | Total: $%-46.2f |%n", " ",total);
+            System.out.println("+----------------------------------------+--------------------------------------------------------+");
+            opcion = ingresarEntero("*    Elige una opcion (1-3): ");
+            switch(opcion){
+                case 1:
+                    
+                    boolean repetido = false;
+                    
+                    System.out.println("\n+----------------------------------------+");
+                    System.out.println("|        AGREGAR PRODUCTO (VENTA)        |");
+                    System.out.println("+----------------------------------------+");
+                    codigoUnico = ingresarEntero("*    Código: ");
+                    System.out.println("+----------------------------------------+");
+                    existeId = buscarProducto(codigoUnico);
+                    
+                    if(existeId!=-100){
+                        System.out.println("-    Nombre: "+inventario[existeId][1]);
+                        System.out.println("-    Precio: "+inventario[existeId][3]);
+                        System.out.println("+----------------------------------------+");
+                        cantidad = ingresarEntero("*    Cantidad: ");
+                        System.out.println("+----------------------------------------+");
+                        
+                        for(int fila=0;fila<100;fila++){ //Evalua si ya existe el producto ingresado en el carrito, para modificar solamente la cantidad, monto y el total.
+                            if(Integer.parseInt(inventario[existeId][0])==Integer.parseInt(carrito[fila][0])){
+                                /*
+                                Cantidad Temporal, solo sirve para evaluar si el nuevo monto no es mayor al Stock, antes de asignarla
+                                y modificar oficialmente a la variable cantidad.
+                                */
+                                int tempCantidad = cantidad+Integer.parseInt(carrito[fila][2]); 
+                                
+                                if(validarStock(existeId, tempCantidad)){
+                                    
+                                    monto = Integer.parseInt(inventario[existeId][3])*cantidad;
+                                    total = total + monto;
+                                    cantidad = cantidad+Integer.parseInt(carrito[fila][2]);
+                                    monto = Integer.parseInt(inventario[existeId][3])*cantidad;
+                                    
+                                    carrito[fila][2] = String.valueOf(cantidad);
+                                    carrito[fila][3] = String.valueOf(monto);
+                                    repetido = true;
+                                    
+                                    System.out.println("[+]    PRODUCTO AGREGADO AL CARRITO");
+                                    System.out.println("       EXITOSAMENTE");
+                                }
+                                break;
+                            }
+                        }
+                        
+                        if(repetido==false && validarStock(existeId, cantidad)){ //Agrega una nueva columna al producto nuevo.
+                            
+                            monto = Integer.parseInt(inventario[existeId][3])*cantidad;
+                            total = total + monto;
+
+                            carrito[contador][0] = inventario[existeId][0];
+                            carrito[contador][1] = inventario[existeId][1];
+                            carrito[contador][2] = String.valueOf(cantidad);
+                            carrito[contador][3] = String.valueOf(monto);
+                            
+                            System.out.println("[+]    PRODUCTO AGREGADO AL CARRITO");
+                            System.out.println("       EXITOSAMENTE");
+
+                            contador++;
+                        }       
+                        
+                        
+                        break;
+                    }else{
+                        System.out.println("[?]   NO SE HA ENCONTRADO NINGUN PRODUCTO");
+                        System.out.println("      CON ESE CÓDIGO.");
+                        System.out.println("+----------------------------------------+");
+                    }
+                    
+                    break;
+                case 2:
+                    if(total!=0){
+                        
+                        LocalDateTime fecha = LocalDateTime.now();
+                        DateTimeFormatter fecha2 = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+                        String fechaFormateada = fecha.format(fecha2);
+                        int posicion = generarCodigoUnicoVenta();
+                        String cantProd=""; //Variable que va almacenar tanto el codigo del producto como su cantidad tambien.
+
+                        for(int fila=0;fila<100;fila++){
+                            if(!carrito[fila][0].equals("-100")){
+                                int posicionProducto = buscarProducto(Integer.parseInt(carrito[fila][0]));
+                                cantProd=cantProd+carrito[fila][0]+","+carrito[fila][2]+"|";
+                                inventario[posicionProducto][4] = String.valueOf(Integer.parseInt(inventario[posicionProducto][4])-Integer.parseInt(carrito[fila][2]));
+                            }
+                        }
+                        ventas[posicion][0] = cantProd;
+                        ventas[posicion][1] = fechaFormateada;
+                        ventas[posicion][2] = String.valueOf(total);
+                        
+                        System.out.println("\n+----------------------------------------+");
+                        System.out.println("|       LA VENTA HA SIDO REGISTRADA      |");
+                        System.out.println("+----------------------------------------+");
+                        opcion=3;
+                        
+                    }else{
+                        System.out.println("+----------------------------------------+");
+                        System.out.println("[?]   NO SE HA AGREGADO NINGUN PRODUCTO.");
+                        System.out.println("+----------------------------------------+");
+                    }
+                    
+                    
+                    break;
+                case 3:
+                    break;
+                default:
+                    break;
+            }
+        }while(opcion!=3);
+    }
+    
+    public boolean validarStock(int codProdInventario, int cantidadVenta){
+        if(Integer.parseInt(inventario[codProdInventario][4])<cantidadVenta){
+            System.out.println("[X]    STOCK INSUFICIENTE PARA: "+cantidadVenta+" UNIDADES,");
+            System.out.println("       CONTAMOS CON: "+inventario[codProdInventario][4]+" UNIDADES.");
+            return false;
+        }
+        return true;
+    }
+    
+    public int buscarProducto(int codigo){
+        for (int fila=0;fila<100;fila++){
+            if(inventario[fila][0].equals(String.valueOf(codigo))){ //Si el ID es encontrado retorna la posicion donde se encuentra
+                return fila;
+            }
+        }
+        return -100;
     }
     
     public void eliminarProducto(int codigo){
@@ -205,10 +370,6 @@ public class Principal {
         
     }
     
-    public void buscarProducto(int opcion, String textoIngresado){
-        
-    }
-    
     public void verProducto(int opcion, String textoIngresado){
         int contador = 0;
         switch(opcion){
@@ -282,7 +443,7 @@ public class Principal {
         
         double confirmarPrecio = validarPositivo(1,precio);
         int confirmarStock = (int) validarPositivo(2,cantidadStock);
-        codigoUnico = generarCodigoUnico();
+        codigoUnico = generarCodigoUnicoProducto();
         
         if( confirmarPrecio != -100 && confirmarStock != -100){
             for(int fila=0;fila<100;fila++){
@@ -302,8 +463,12 @@ public class Principal {
         
     }
     
-    public int generarCodigoUnico(){
-        return ++ultimoCodigo;
+    public int generarCodigoUnicoProducto(){
+        return ++ultimoCodigoProducto;
+    }
+    
+    public int generarCodigoUnicoVenta(){
+        return ++ultimoCodigoVenta;
     }
     
     public void mostrarDatosEstudiante(){
@@ -391,14 +556,23 @@ public class Principal {
         return decimal;
     }
     
-    public void generarEspaciosVacios(){
+    public void generarEspaciosVaciosInventario(){
         for (int fila=0;fila<100;fila++){
             inventario[fila][0] = "-100";
-            inventario[fila][1] = String.valueOf("VACIO");
-            for (int col=2;col<5;col++){ //Empieza en 2, porque la seccion de ID y Nombre ya la modifico arriba.
+            for (int col=1;col<5;col++){ //Empieza en 1, porque la seccion de ID ya la modifico arriba.
                 inventario[fila][col] = "VACIO";
             }
         }
+    }
+    
+    public String[][] generarEspaciosVaciosCarrito(String [][] carrito){
+        for (int fila=0;fila<100;fila++){
+            carrito[fila][0] = "-100";
+            for (int col=1;col<4;col++){ //Empieza en 1, porque la seccion de ID ya la modifico arriba.
+                carrito[fila][col] = "VACIO";
+            }
+        }
+        return carrito;
     }
     
     public void agregarDatosPrueba(){ //FUNCION SOLO PARA TRABAJAR CON PRUEBAS
@@ -406,9 +580,9 @@ public class Principal {
         for (int fila=0;fila<100;fila++){
             inventario[fila][0] = String.valueOf(fila);
             inventario[fila][1] = String.valueOf("Nombre"+(fila));
-            for (int col=2;col<5;col++){ //Empieza en 2, porque la seccion de ID y Nombre ya la modifico arriba.
-                inventario[fila][col] = "XX";
-            }
+            inventario[fila][2] = String.valueOf("Categoria"+(fila));
+            inventario[fila][3] = String.valueOf(100+(fila*5));
+            inventario[fila][4] = String.valueOf(20+(fila*5)); 
         }
         
 //        for (int fila=25;fila<100;fila++){
@@ -459,6 +633,30 @@ public class Principal {
         }else{
             System.out.println("+-----+----------------------+----------------------+--------------------------------------------------+-------+");
             System.out.println("Productos agregados: ["+contarPersonajes+"/100]");
+        }
+    }
+    
+    public void verListadoVentas(){ //FUNCION SOLO PARA TRABAJAR CON PRUEBAS
+        int contarPersonajes = 0;
+        System.out.println("+-----+-------------------------------------+----------------------------------------+-----------+");
+        System.out.println("| CODIGO Y CANTIDAD VENDIDA                 | FECHA Y HORA                           | TOTAL     |");
+        System.out.println("+-----+-------------------------------------+----------------------------------------+-----------+");
+        for (int fila=0;fila<100;fila++){
+//            if(!(inventario[fila][0].equals("100"))){ //No se muestran las IDS 100, o sea las que no contienen datos.
+                System.out.printf("| %-24.24s | %-20.20s | %-10.10s | %n", 
+                    ventas[fila][0],
+                    ventas[fila][1],
+                    ventas[fila][2]
+                );
+                contarPersonajes++;
+//            }
+        }
+        if(contarPersonajes == 0){
+            System.out.println("+-----+----------------------+----------------------+--------------------------------------------------+-------+");
+            System.out.println("NO HAY VENTAS AGREGADOS.");
+        }else{
+            System.out.println("+-----+----------------------+----------------------+--------------------------------------------------+-------+");
+            System.out.println("Ventas agregadas: ["+contarPersonajes+"/100]");
         }
     }
 }
