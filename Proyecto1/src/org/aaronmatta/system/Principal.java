@@ -9,27 +9,55 @@ public class Principal {
     //___ DECLARACION DE VARIABLES, ARRAYS, ETC. ___
     
     Scanner scanner = new Scanner(System.in);
-       
+    
+    String nombreUsuario; 
+    String carnetUsuario;
+    String usuario;
+    
     String nombre, categoria;
     double precio;
     int opcion, cantidadStock, codigoUnico, cantidad;
-    int ultimoCodigoProducto=-1, ultimoCodigoVenta = -1;
+    
+    int ultimoCodigoProducto=-1, ultimoCodigoVenta = -1, ultimoCodigoBitacora=-1;
         
     String[][] inventario = new String[100][5];
     String[][] ventas = new String[100][3];
-    String[][] bitacora = new String[100][4];
+    String[][] bitacora = new String[200][5];
+    
+    //ACCIONES DE LA BITACORA
+    String TIPOACCION_AGREGAR = "AGREGAR";
+    String TIPOACCION_BUSCAR = "BUSCAR";
+    String TIPOACCION_ELIMINAR = "ELIMINAR";
+    String TIPOACCION_REGISTRAR = "REGISTRAR";
+    String TIPOACCION_GENERAR = "GENERAR";
+    String TIPOACCION_VER = "VER";
+    
+    String ACCION_CORRECTA = "CORRECTA";
+    String ACCION_ERRONEA = "ERRONEA";
     
     //______________________________________________
     
     public static void main(String[] args) {
         Principal programa = new Principal();
         programa.generarEspaciosVaciosInventario();
-        programa.agregarDatosPrueba();
+//        programa.agregarDatosPrueba();
         programa.menu();
         
     }
 
     public void menu(){
+        System.out.println("\n+----------------------------------------+");
+        System.out.println("|           INGRESA TU NOMBRE            |");
+        System.out.println("+----------------------------------------+");
+        nombreUsuario = ingresarTexto("*    Nombre: ");
+        System.out.println("\n+----------------------------------------+");
+        System.out.println("|           INGRESA TU CARNET            |");
+        System.out.println("+----------------------------------------+");
+        carnetUsuario = String.valueOf(ingresarEntero("*    Carnet: "));
+        System.out.println("+----------------------------------------+");
+        System.out.println("[✓]    DATOS DEL USUARIO GUARDADOS.");
+        usuario = nombreUsuario+","+carnetUsuario;
+        System.out.println("+----------------------------------------+");
         do{
             System.out.println("\n+----------------------------------------+");
             System.out.println("|             MENÚ PRINCIPAL             |");
@@ -128,12 +156,25 @@ public class Principal {
                 case 22: //SOLAMENTE PARA PRUEBAS ESTO SE ELIMINARA DESPUES
                     verListadoVentas();
                     break;
+                case 33: //SOLAMENTE PARA PRUEBAS ESTO SE ELIMINARA DESPUES
+                    verListadoBitacora();
+                    break;
                 default:
                     System.out.println("\n[?]    INGRESE UNA DE LAS OPCIONES VÁLIDAS.");
                     break;
             }
         }while(opcion!=8);
         
+    }
+    
+    public void registrarBitacora(String tipoAccion, String accion, String usuario, String mensaje){
+        String fecha = generarFechaHoraActual();
+        int posicion = generarCodigoUnicoBitacora();
+        bitacora[posicion][0]= fecha;
+        bitacora[posicion][1]= tipoAccion;
+        bitacora[posicion][2]= accion;
+        bitacora[posicion][3]= usuario;
+        bitacora[posicion][4]= mensaje;
     }
     
     public void registrarVenta() {
@@ -192,14 +233,14 @@ public class Principal {
                                 Cantidad Temporal, solo sirve para evaluar si el nuevo monto no es mayor al Stock, antes de asignarla
                                 y modificar oficialmente a la variable cantidad.
                                 */
-                                int tempCantidad = cantidad+Integer.parseInt(carrito[fila][2]); 
+                                int tempCantidad = cantidad + Integer.parseInt(carrito[fila][2]); 
                                 
                                 if(validarStock(existeId, tempCantidad)){
                                     
-                                    monto = Integer.parseInt(inventario[existeId][3])*cantidad;
+                                    monto = Double.parseDouble(inventario[existeId][3])*cantidad;
                                     total = total + monto;
                                     cantidad = cantidad+Integer.parseInt(carrito[fila][2]);
-                                    monto = Integer.parseInt(inventario[existeId][3])*cantidad;
+                                    monto = Double.parseDouble(inventario[existeId][3])*cantidad;
                                     
                                     carrito[fila][2] = String.valueOf(cantidad);
                                     carrito[fila][3] = String.valueOf(monto);
@@ -214,7 +255,7 @@ public class Principal {
                         
                         if(repetido==false && validarStock(existeId, cantidad)){ //Agrega una nueva columna al producto nuevo.
                             
-                            monto = Integer.parseInt(inventario[existeId][3])*cantidad;
+                            monto = Double.parseDouble(inventario[existeId][3])*cantidad;
                             total = total + monto;
 
                             carrito[contador][0] = inventario[existeId][0];
@@ -233,39 +274,48 @@ public class Principal {
                     }else{
                         System.out.println("[?]   NO SE HA ENCONTRADO NINGUN PRODUCTO");
                         System.out.println("      CON ESE CÓDIGO.");
-                        System.out.println("+----------------------------------------+");
                     }
                     
                     break;
                 case 2:
                     if(total!=0){
                         
-                        LocalDateTime fecha = LocalDateTime.now();
-                        DateTimeFormatter fecha2 = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-                        String fechaFormateada = fecha.format(fecha2);
+                        String fecha = generarFechaHoraActual();
                         int posicion = generarCodigoUnicoVenta();
+                        
+                        if(posicion>200){
+                            System.out.println("+----------------------------------------+");
+                            System.out.println("[?]   SE HA ALCANZADO EL CUPO MAXIMO DE ");
+                            System.out.println("      VENTAS PARA ALMACENAR.             ");
+                            System.out.println("+----------------------------------------+");
+                            registrarBitacora(TIPOACCION_REGISTRAR,ACCION_ERRONEA,usuario,"ESPACIO PARA ALMACENAR VENTAS ESTA LLENO");
+                            break;
+                        }
+                        
                         String cantProd=""; //Variable que va almacenar tanto el codigo del producto como su cantidad tambien.
-
+                        
                         for(int fila=0;fila<100;fila++){
                             if(!carrito[fila][0].equals("-100")){
                                 int posicionProducto = buscarProducto(Integer.parseInt(carrito[fila][0]));
                                 cantProd=cantProd+carrito[fila][0]+","+carrito[fila][2]+"|";
-                                inventario[posicionProducto][4] = String.valueOf(Integer.parseInt(inventario[posicionProducto][4])-Integer.parseInt(carrito[fila][2]));
+                                inventario[posicionProducto][4] = String.valueOf(Integer.parseInt(inventario[posicionProducto][4])-Integer.parseInt(carrito[fila][2])); //Restar del inventario
                             }
                         }
                         ventas[posicion][0] = cantProd;
-                        ventas[posicion][1] = fechaFormateada;
+                        ventas[posicion][1] = fecha;
                         ventas[posicion][2] = String.valueOf(total);
                         
                         System.out.println("\n+----------------------------------------+");
                         System.out.println("|       LA VENTA HA SIDO REGISTRADA      |");
                         System.out.println("+----------------------------------------+");
+                        registrarBitacora(TIPOACCION_REGISTRAR,ACCION_CORRECTA,usuario,"PRODUCTOS: "+cantProd+"    "+"TOTAL: "+total );
                         opcion=3;
                         
                     }else{
                         System.out.println("+----------------------------------------+");
                         System.out.println("[?]   NO SE HA AGREGADO NINGUN PRODUCTO.");
                         System.out.println("+----------------------------------------+");
+                        registrarBitacora(TIPOACCION_REGISTRAR,ACCION_ERRONEA,usuario,"SE INTENTO REGISTRAR VENTA SIN PRODUCTOS AGREGADOS");
                     }
                     
                     
@@ -322,11 +372,13 @@ public class Principal {
                     encontrado=true;
                     System.out.println("+----------------------------------------+");
                     System.out.println("[-]    PRODUCTO ELIMINADO EXITOSAMENTE.");
+                    registrarBitacora(TIPOACCION_ELIMINAR,ACCION_CORRECTA,usuario,"CODIGO: "+codigo);
                     break;
                 }
                 
                 System.out.println("+----------------------------------------+");
                 System.out.println("[X]    ACCION CANCELADA.");
+                registrarBitacora(TIPOACCION_ELIMINAR,ACCION_ERRONEA,usuario,"EL USUARIO CANCELO LA ELIMINACION DEL PRODUCTO CON CODIGO: "+codigo);
                 return;
                 
             }
@@ -335,6 +387,7 @@ public class Principal {
             System.out.println("+----------------------------------------+");
             System.out.println("[?]   NO SE HA ENCONTRADO NINGUN PRODUCTO");
             System.out.println("      CON ESE CÓDIGO.");
+            registrarBitacora(TIPOACCION_ELIMINAR,ACCION_ERRONEA,usuario,"NINGUN PRODUCTO ENCONTRADO CON CODIGO: "+codigo);
             return;
         }
         
@@ -382,14 +435,17 @@ public class Principal {
                         System.out.println("-    Precio: "+inventario[fila][3]);
                         System.out.println("-    Stock: "+inventario[fila][4]);
                         System.out.println("+----------------------------------------+");
+                        registrarBitacora(TIPOACCION_BUSCAR,ACCION_CORRECTA,usuario,"CODIGO: "+textoIngresado);
                         contador++;
                         break;
                     }
                 }
                 if(contador==0){
                     System.out.println("[?]   NO SE HA ENCONTRADO NINGUN PRODUCTO.");
+                    registrarBitacora(TIPOACCION_BUSCAR,ACCION_ERRONEA,usuario,"NINGUN PRODUCTO CON CODIGO: "+textoIngresado);
                     break;
                 }
+                break;
             case 2:
                 for (int fila=0;fila<100;fila++){
                     if(inventario[fila][1].equals(String.valueOf(textoIngresado))){ //Si el NOMBRE coincide muestra los datos en esa posicion
@@ -404,8 +460,11 @@ public class Principal {
                 }
                 if(contador==0){
                     System.out.println("[?]   NO SE HA ENCONTRADO NINGUN PRODUCTO.");
+                    registrarBitacora(TIPOACCION_BUSCAR,ACCION_ERRONEA,usuario,"NINGUN PRODUCTO CON NOMBRE: "+textoIngresado);
                     break;
                 }
+                registrarBitacora(TIPOACCION_BUSCAR,ACCION_CORRECTA,usuario,"NOMBRE: "+textoIngresado);
+                break;
             case 3:
                 for (int fila=0;fila<100;fila++){
                     if(inventario[fila][2].equals(String.valueOf(textoIngresado))){ //Si la CATEGORIA coincide muestra los datos en esa posicion
@@ -420,8 +479,11 @@ public class Principal {
                 }
                 if(contador==0){
                     System.out.println("[?]   NO SE HA ENCONTRADO NINGUN PRODUCTO.");
+                    registrarBitacora(TIPOACCION_BUSCAR,ACCION_ERRONEA,usuario,"NINGUN PRODUCTO CON CATEGORIA: "+textoIngresado);
                     break;
                 }
+                registrarBitacora(TIPOACCION_BUSCAR,ACCION_CORRECTA,usuario,"CATEGORIA: "+textoIngresado);
+                break;
         }
     }
 
@@ -438,14 +500,17 @@ public class Principal {
         if(!espacioDisponible){
             System.out.println("+----------------------------------------+");
             System.out.println("[?]   INVENTARIO LLENO.");
+            registrarBitacora(TIPOACCION_AGREGAR,ACCION_ERRONEA,usuario,"INVENTARIO LLENO");
             return;
         }
         
         double confirmarPrecio = validarPositivo(1,precio);
         int confirmarStock = (int) validarPositivo(2,cantidadStock);
-        codigoUnico = generarCodigoUnicoProducto();
         
         if( confirmarPrecio != -100 && confirmarStock != -100){
+            
+            codigoUnico = generarCodigoUnicoProducto();
+            
             for(int fila=0;fila<100;fila++){
                 if(inventario[fila][0].equals("-100")){
                     inventario[fila][0] = String.valueOf(codigoUnico);
@@ -456,11 +521,17 @@ public class Principal {
                     System.out.println("+----------------------------------------+");
                     System.out.println("[+]    PRODUCTO AGREGADO EXITOSAMENTE.");
                     System.out.println("       CON CÓDIGO: "+codigoUnico);
-                    break;
+                    registrarBitacora(TIPOACCION_AGREGAR,ACCION_CORRECTA,usuario,"CÓDIGO: "+codigoUnico);
+                    return;
                 }
             }
         }
+        registrarBitacora(TIPOACCION_AGREGAR,ACCION_ERRONEA,usuario,"NÚMERO INGRESADO DE PRECIO/STOCK INVÁLIDO");
         
+    }
+    
+    public int generarCodigoUnicoBitacora(){
+        return ++ultimoCodigoBitacora;
     }
     
     public int generarCodigoUnicoProducto(){
@@ -469,6 +540,13 @@ public class Principal {
     
     public int generarCodigoUnicoVenta(){
         return ++ultimoCodigoVenta;
+    }
+    
+    public String generarFechaHoraActual(){
+        LocalDateTime fecha = LocalDateTime.now();
+        DateTimeFormatter fecha2 = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        String fechaFormateada = fecha.format(fecha2);
+        return fechaFormateada;
     }
     
     public void mostrarDatosEstudiante(){
@@ -481,6 +559,7 @@ public class Principal {
         System.out.println("|           Programacion y Computacion 1 |");
         System.out.println("|    Sección: F                          |");
         System.out.println("+----------------------------------------+");
+        registrarBitacora(TIPOACCION_VER,ACCION_CORRECTA,usuario,"SE MOSTRÓ LA INFORMACIÓN DEL ESTUDIANTE");
     }
     
     public double validarPositivo(int mensaje, double numeroIngresado){
@@ -596,6 +675,8 @@ public class Principal {
         inventario[6][0]="6";
         inventario[6][1]="NombreUnico";
         
+        usuario = "Gerson,202403711";
+        
 //        inventario[7][0]="-100";
 //        inventario[7][1]="VACIO";
 //        
@@ -657,6 +738,32 @@ public class Principal {
         }else{
             System.out.println("+-----+----------------------+----------------------+--------------------------------------------------+-------+");
             System.out.println("Ventas agregadas: ["+contarPersonajes+"/100]");
+        }
+    }
+    
+    public void verListadoBitacora(){ //FUNCION SOLO PARA TRABAJAR CON PRUEBAS
+        int contarPersonajes = 0;
+        System.out.println("+------------------------------------------------------------------------------------------------+");
+        System.out.println("| FECHA Y HORA       | TIPO DE ACCION    | ACCION     | USUARIO       | MENSAJE                                                 |");
+        System.out.println("+------------------------------------------------------------------------------------------------+");
+        for (int fila=0;fila<200;fila++){
+//            if(!(inventario[fila][0].equals("100"))){ //No se muestran las IDS 100, o sea las que no contienen datos.
+                System.out.printf("| %-20.20s | %-15.15s | %-10.10s | %-20.20S | %-85.85S | %n", 
+                    bitacora[fila][0],
+                    bitacora[fila][1],
+                    bitacora[fila][2],
+                    bitacora[fila][3],
+                    bitacora[fila][4]
+                );
+                contarPersonajes++;
+//            }
+        }
+        if(contarPersonajes == 0){
+            System.out.println("+-----+----------------------+----------------------+--------------------------------------------------+-------+");
+            System.out.println("NO HAY BITACORAS AGREGADAS.");
+        }else{
+            System.out.println("+-----+----------------------+----------------------+--------------------------------------------------+-------+");
+            System.out.println("Bitacoras agregadas: ["+contarPersonajes+"/200]");
         }
     }
 }
