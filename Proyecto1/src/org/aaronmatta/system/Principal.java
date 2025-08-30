@@ -4,6 +4,12 @@ import java.util.Scanner;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfWriter;
+import java.io.*;
+
 public class Principal {
 
     //___ DECLARACION DE VARIABLES, ARRAYS, ETC. ___
@@ -40,7 +46,7 @@ public class Principal {
     public static void main(String[] args) {
         Principal programa = new Principal();
         programa.generarEspaciosVaciosInventario();
-//        programa.agregarDatosPrueba();
+        programa.agregarDatosPrueba();
         programa.menu();
         
     }
@@ -142,11 +148,35 @@ public class Principal {
                     registrarVenta();
                     break;
                 case 5:
+                    do{
+                        System.out.println("\n+----------------------------------------+");
+                        System.out.println("|            GENERAR REPORTES            |");
+                        System.out.println("+----------------------------------------+");
+                        System.out.println("|    1. Reporte de Stock.                |");
+                        System.out.println("|    2. Reporte de Ventas.               |");
+                        System.out.println("|    3. Regresar                         |");
+                        System.out.println("+----------------------------------------+");
+                        opcion = ingresarEntero("*    Elige una opcion (1-3): ");
+                        switch(opcion){
+                            case 1:
+                                generarPdfStock();
+                                break;
+                            case 2:
+                                break;
+                            case 3:
+                                break;
+                            default:
+                                System.out.println("\n[?]    INGRESE UNA DE LAS OPCIONES VÁLIDAS.");
+                                break;
+                        }
+                        
+                    }while(opcion!=3);
                     break;
                 case 6:
                     mostrarDatosEstudiante();
                     break;
                 case 7:
+                    verListadoBitacora();
                     break;
                 case 8:
                     break;
@@ -156,9 +186,6 @@ public class Principal {
                 case 22: //SOLAMENTE PARA PRUEBAS ESTO SE ELIMINARA DESPUES
                     verListadoVentas();
                     break;
-                case 33: //SOLAMENTE PARA PRUEBAS ESTO SE ELIMINARA DESPUES
-                    verListadoBitacora();
-                    break;
                 default:
                     System.out.println("\n[?]    INGRESE UNA DE LAS OPCIONES VÁLIDAS.");
                     break;
@@ -167,14 +194,152 @@ public class Principal {
         
     }
     
+    public void generarPdfStock(){
+        
+        LocalDateTime fechaSinFormato = LocalDateTime.now();
+        String fechaArchivo = fechaSinFormato.format(DateTimeFormatter.ofPattern("dd_MM_YYYY_HH_mm_ss"));
+        String fechaTexto =fechaSinFormato.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+        
+        String rutaArchivo = "C:\\Users\\TheSn\\Downloads\\"+fechaArchivo+"_Stock.pdf";
+        Document documento = new Document();
+
+        try {
+        
+            PdfWriter.getInstance(documento, new FileOutputStream(rutaArchivo));
+
+            documento.open();
+            
+            // Estilos
+            Font tituloFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, BaseColor.DARK_GRAY);
+            Font textoFont1 = FontFactory.getFont(FontFactory.HELVETICA, 9, BaseColor.GRAY);
+            Font textoFont2 = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14, BaseColor.RED);
+            Font encabezadoFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, BaseColor.WHITE);
+            Font celdaFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+
+            // Titulo/Informacion
+            Paragraph titulo = new Paragraph("REPORTE DE INVENTARIO - STOCK", tituloFont);
+            titulo.setAlignment(Element.ALIGN_CENTER);
+            documento.add(titulo);
+            
+            Paragraph informacion = new Paragraph(
+                "Generado el: "+fechaTexto+"    |    Usuario: "+nombreUsuario+"    |    Carnet: "+carnetUsuario, textoFont1
+            );
+            informacion.setAlignment(Element.ALIGN_CENTER);
+            informacion.setSpacingAfter(15);
+            documento.add(informacion);
+            
+            // Crear la tabla
+            PdfPTable tabla = new PdfPTable(5);
+            float[] anchosColumnas = {1f, 3f, 2f, 1.5f, 1.5f};
+            tabla.setWidthPercentage(100);
+            tabla.setWidths(anchosColumnas);
+
+            // Encabezados
+            PdfPCell h1 = new PdfPCell(new Paragraph("ID", encabezadoFont));
+            h1.setBackgroundColor(new BaseColor(36, 48, 166));
+            h1.setHorizontalAlignment(Element.ALIGN_CENTER);
+            h1.setBorderWidth(1.2f);
+            h1.setPadding(8);
+            tabla.addCell(h1);
+
+            PdfPCell h2 = new PdfPCell(new Paragraph("Nombre", encabezadoFont));
+            h2.setBackgroundColor(new BaseColor(36, 48, 166));
+            h2.setHorizontalAlignment(Element.ALIGN_CENTER);
+            h2.setBorderWidth(1.2f);
+            h2.setPadding(8);
+            tabla.addCell(h2);
+
+            PdfPCell h3 = new PdfPCell(new Paragraph("Categoria", encabezadoFont));
+            h3.setBackgroundColor(new BaseColor(36, 48, 166));
+            h3.setHorizontalAlignment(Element.ALIGN_CENTER);
+            h3.setBorderWidth(1.2f);
+            h3.setPadding(8);
+            tabla.addCell(h3);
+
+            PdfPCell h4 = new PdfPCell(new Paragraph("Precio", encabezadoFont));
+            h4.setBackgroundColor(new BaseColor(36, 48, 166));
+            h4.setHorizontalAlignment(Element.ALIGN_CENTER);
+            h4.setBorderWidth(1.2f);
+            h4.setPadding(8);
+            tabla.addCell(h4);
+
+            PdfPCell h5 = new PdfPCell(new Paragraph("Stock", encabezadoFont));
+            h5.setBackgroundColor(new BaseColor(36, 48, 166));
+            h5.setHorizontalAlignment(Element.ALIGN_CENTER);
+            h5.setBorderWidth(1.2f);
+            h5.setPadding(8);
+            tabla.addCell(h5);
+            
+            int contarFilas = 0;
+
+            // Agregar cada fila y columna
+            for(int fila=0;fila<100;fila++){
+                if(!inventario[fila][0].equals("-100")){
+                    contarFilas++;
+                    
+                    PdfPCell celdaCodigo = new PdfPCell(new Phrase(inventario[fila][0], celdaFont));
+                    celdaCodigo.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    celdaCodigo.setPadding(5);
+                    tabla.addCell(celdaCodigo);
+                    
+                    PdfPCell celdaNombre = new PdfPCell(new Phrase(inventario[fila][1], celdaFont));
+                    celdaNombre.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    celdaNombre.setPadding(5);
+                    tabla.addCell(celdaNombre);
+                    
+                    PdfPCell celdaCategoria = new PdfPCell(new Phrase(inventario[fila][2], celdaFont));
+                    celdaCategoria.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    celdaCategoria.setPadding(5);
+                    tabla.addCell(celdaCategoria);
+                    
+                    PdfPCell celdaPrecio = new PdfPCell(new Phrase(inventario[fila][3], celdaFont));
+                    celdaPrecio.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    celdaPrecio.setPadding(5);
+                    tabla.addCell(celdaPrecio);
+                    
+                    PdfPCell celdaStock = new PdfPCell(new Phrase(inventario[fila][4], celdaFont));
+                    celdaStock.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    celdaStock.setPadding(5);
+                    tabla.addCell(celdaStock);
+                        
+                }
+            }
+            
+            // Añadir la tabla al documento
+            documento.add(tabla);
+            
+            if(contarFilas==0){
+                Paragraph sinProductos = new Paragraph("NO HAY PRODUCTOS AGREGADOS EN EL INVENTARIO.", textoFont2);
+                sinProductos.setSpacingAfter(15);
+                sinProductos.setAlignment(Element.ALIGN_CENTER);
+                documento.add(sinProductos);
+            }
+
+            System.out.println("Tabla generada con éxito.");
+            System.out.println("PDF creado en la siguiente ruta: " + rutaArchivo);
+            registrarBitacora(TIPOACCION_GENERAR,ACCION_CORRECTA,usuario,"PDF STOCK GENERADO");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            registrarBitacora(TIPOACCION_GENERAR,ACCION_ERRONEA,usuario,"ERROR AL GENERAR PDF STOCK");
+        } finally {
+            // Cerrar documento
+            if (documento.isOpen()) {
+                documento.close();
+            }
+        }
+    }
+    
     public void registrarBitacora(String tipoAccion, String accion, String usuario, String mensaje){
         String fecha = generarFechaHoraActual();
         int posicion = generarCodigoUnicoBitacora();
-        bitacora[posicion][0]= fecha;
-        bitacora[posicion][1]= tipoAccion;
-        bitacora[posicion][2]= accion;
-        bitacora[posicion][3]= usuario;
-        bitacora[posicion][4]= mensaje;
+        if(!(posicion>200)){
+            bitacora[posicion][0]= fecha;
+            bitacora[posicion][1]= tipoAccion;
+            bitacora[posicion][2]= accion;
+            bitacora[posicion][3]= usuario;
+            bitacora[posicion][4]= mensaje;
+        }
     }
     
     public void registrarVenta() {
@@ -696,7 +861,7 @@ public class Principal {
         System.out.println("| ID  | NOMBRE                              | CATEGORIA                              | PRECIO    | STOCK       |");
         System.out.println("+-----+-------------------------------------+----------------------------------------+-----------+-------------+");
         for (int fila=0;fila<100;fila++){
-//            if(!(inventario[fila][0].equals("100"))){ //No se muestran las IDS 100, o sea las que no contienen datos.
+            if(!(inventario[fila][0].equals("-100"))){ //No se muestran las IDS 100, o sea las que no contienen datos.
                 System.out.printf("| %-4s | %-20.20s | %-20.20s | %-48.48s | %-5s |%n", 
                     inventario[fila][0],
                     inventario[fila][1],
@@ -706,7 +871,7 @@ public class Principal {
                 
                 );
                 contarPersonajes++;
-//            }
+            }
         }
         if(contarPersonajes == 0){
             System.out.println("+-----+----------------------+----------------------+--------------------------------------------------+-------+");
@@ -723,14 +888,14 @@ public class Principal {
         System.out.println("| CODIGO Y CANTIDAD VENDIDA                 | FECHA Y HORA                           | TOTAL     |");
         System.out.println("+-----+-------------------------------------+----------------------------------------+-----------+");
         for (int fila=0;fila<100;fila++){
-//            if(!(inventario[fila][0].equals("100"))){ //No se muestran las IDS 100, o sea las que no contienen datos.
+            if(!(inventario[fila][0]!=null)){ //No se muestran las IDS 100, o sea las que no contienen datos.
                 System.out.printf("| %-24.24s | %-20.20s | %-10.10s | %n", 
                     ventas[fila][0],
                     ventas[fila][1],
                     ventas[fila][2]
                 );
                 contarPersonajes++;
-//            }
+            }
         }
         if(contarPersonajes == 0){
             System.out.println("+-----+----------------------+----------------------+--------------------------------------------------+-------+");
@@ -741,13 +906,13 @@ public class Principal {
         }
     }
     
-    public void verListadoBitacora(){ //FUNCION SOLO PARA TRABAJAR CON PRUEBAS
-        int contarPersonajes = 0;
-        System.out.println("+------------------------------------------------------------------------------------------------+");
-        System.out.println("| FECHA Y HORA       | TIPO DE ACCION    | ACCION     | USUARIO       | MENSAJE                                                 |");
-        System.out.println("+------------------------------------------------------------------------------------------------+");
+    public void verListadoBitacora(){
+        int contarBitacoras = 0;
+        System.out.println("\n+----------------------+-----------------+------------+----------------------+---------------------------------------------------------------------------------------+");
+        System.out.println("| FECHA Y HORA         | TIPO DE ACCION  | ACCION     | USUARIO              | MENSAJE                                                                               |");
+        System.out.println("+----------------------+-----------------+------------+----------------------+---------------------------------------------------------------------------------------+");
         for (int fila=0;fila<200;fila++){
-//            if(!(inventario[fila][0].equals("100"))){ //No se muestran las IDS 100, o sea las que no contienen datos.
+            if(bitacora[fila][0]!=null){ //No se muestran las IDS 100, o sea las que no contienen datos.
                 System.out.printf("| %-20.20s | %-15.15s | %-10.10s | %-20.20S | %-85.85S | %n", 
                     bitacora[fila][0],
                     bitacora[fila][1],
@@ -755,15 +920,15 @@ public class Principal {
                     bitacora[fila][3],
                     bitacora[fila][4]
                 );
-                contarPersonajes++;
-//            }
+                contarBitacoras++;
+            }
         }
-        if(contarPersonajes == 0){
-            System.out.println("+-----+----------------------+----------------------+--------------------------------------------------+-------+");
-            System.out.println("NO HAY BITACORAS AGREGADAS.");
+        if(contarBitacoras == 0){
+            System.out.println("+----------------------+-----------------+------------+----------------------+---------------------------------------------------------------------------------------+");
+            System.out.println("NO HAY REGISTROS.");
         }else{
-            System.out.println("+-----+----------------------+----------------------+--------------------------------------------------+-------+");
-            System.out.println("Bitacoras agregadas: ["+contarPersonajes+"/200]");
+            System.out.println("+----------------------+-----------------+------------+----------------------+---------------------------------------------------------------------------------------+");
+            System.out.println("Bitacoras agregadas: ["+contarBitacoras+"/200]");
         }
     }
 }
