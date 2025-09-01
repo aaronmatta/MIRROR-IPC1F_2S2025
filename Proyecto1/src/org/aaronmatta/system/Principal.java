@@ -29,6 +29,10 @@ public class Principal {
     String[][] inventario = new String[100][5];
     String[][] ventas = new String[100][3];
     String[][] bitacora = new String[200][5];
+    String[] categorias = {
+        "Camisetas y blusas", "Pantalones y jeans", "Faldas y vestidos", "Chamarras y abrigos", "Suéteres y sudaderas", 
+        "Ropa interior", "Calzado", "Accesorios", "Ropa deportiva", "Ropa de dormir"
+    };
     
     //ACCIONES DE LA BITACORA
     String TIPOACCION_AGREGAR = "AGREGAR";
@@ -46,7 +50,7 @@ public class Principal {
     public static void main(String[] args) {
         Principal programa = new Principal();
         programa.generarEspaciosVaciosInventario();
-        programa.agregarDatosPrueba();
+//        programa.agregarDatosPrueba();
         programa.menu();
         
     }
@@ -84,7 +88,9 @@ public class Principal {
                     System.out.println("|            AGREGAR PRODUCTO            |");
                     System.out.println("+----------------------------------------+");
                     nombre = ingresarTexto("*    Nombre: ");
-                    categoria = ingresarTexto("*    Categoría: ");
+                    
+                    categoria = categorias[ingresarValidarCategorias()];
+                    
                     precio = ingresarDecimal("*    Precio: ");
                     cantidadStock = ingresarEntero("*    Cantidad en Stock: ");
                     agregarProducto(nombre, categoria, precio, cantidadStock);
@@ -121,7 +127,7 @@ public class Principal {
                                 System.out.println("\n+----------------------------------------+");
                                 System.out.println("|       BUSCAR PRODUCTO (CATEGORÍA)      |");
                                 System.out.println("+----------------------------------------+");
-                                categoria = ingresarTexto("*    Categoría: ");
+                                categoria = categorias[ingresarValidarCategorias()];
                                 System.out.println("+----------------------------------------+");
                                 verProducto(opcion,categoria);
                                 break;
@@ -193,6 +199,20 @@ public class Principal {
             }
         }while(opcion!=8);
         
+    }
+    
+    public int ingresarValidarCategorias(){
+        int categoriaIngresada;
+        do{
+            for(int i=0;i<categorias.length;i++){
+                System.out.println("      "+(i+1)+". "+categorias[i]);
+            }
+            categoriaIngresada = ingresarEntero("*    Categoría: ");
+            if(!(categoriaIngresada<=(categorias.length) && categoriaIngresada>0)){
+                System.out.println("\n[?]    ERROR: Por favor ingrese un número entre 1 y " + categorias.length);
+            }
+        }while(!(categoriaIngresada<=(categorias.length) && categoriaIngresada>0));
+        return categoriaIngresada;
     }
     
     public void generarPdfVentas(){
