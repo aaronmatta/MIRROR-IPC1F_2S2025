@@ -162,6 +162,7 @@ public class Principal {
                                 generarPdfStock();
                                 break;
                             case 2:
+                                generarPdfVentas();
                                 break;
                             case 3:
                                 break;
@@ -192,6 +193,133 @@ public class Principal {
             }
         }while(opcion!=8);
         
+    }
+    
+    public void generarPdfVentas(){
+        
+        LocalDateTime fechaSinFormato = LocalDateTime.now();
+        String fechaArchivo = fechaSinFormato.format(DateTimeFormatter.ofPattern("dd_MM_YYYY_HH_mm_ss"));
+        String fechaTexto =fechaSinFormato.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+        
+        String rutaArchivo = "C:\\Users\\TheSn\\Downloads\\"+fechaArchivo+"_Venta.pdf";
+        Document documento = new Document();
+
+        try {
+        
+            PdfWriter.getInstance(documento, new FileOutputStream(rutaArchivo));
+
+            documento.open();
+            
+            // Estilos
+            Font tituloFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, BaseColor.DARK_GRAY);
+            Font textoFont1 = FontFactory.getFont(FontFactory.HELVETICA, 9, BaseColor.GRAY);
+            Font textoFont2 = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14, BaseColor.RED);
+            Font encabezadoFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, BaseColor.WHITE);
+            Font celdaFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+
+            // Titulo/Informacion
+            Paragraph titulo = new Paragraph("REPORTE DE VENTAS", tituloFont);
+            titulo.setAlignment(Element.ALIGN_CENTER);
+            documento.add(titulo);
+            
+            Paragraph informacion = new Paragraph(
+                "Generado el: "+fechaTexto+"    |    Usuario: "+nombreUsuario+"    |    Carnet: "+carnetUsuario, textoFont1
+            );
+            informacion.setAlignment(Element.ALIGN_CENTER);
+            informacion.setSpacingAfter(15);
+            documento.add(informacion);
+            
+            // Crear la tabla
+            PdfPTable tabla = new PdfPTable(3);
+            float[] anchosColumnas = {7f, 2f, 1f};
+            tabla.setWidthPercentage(100);
+            tabla.setWidths(anchosColumnas);
+
+            // Encabezados
+            PdfPCell h1 = new PdfPCell(new Paragraph("Código, Nombre, Cantidad", encabezadoFont));
+            h1.setBackgroundColor(new BaseColor(36, 48, 166));
+            h1.setHorizontalAlignment(Element.ALIGN_CENTER);
+            h1.setBorderWidth(1.2f);
+            h1.setPadding(8);
+            tabla.addCell(h1);
+
+            PdfPCell h2 = new PdfPCell(new Paragraph("Fecha y Hora", encabezadoFont));
+            h2.setBackgroundColor(new BaseColor(36, 48, 166));
+            h2.setHorizontalAlignment(Element.ALIGN_CENTER);
+            h2.setBorderWidth(1.2f);
+            h2.setPadding(8);
+            tabla.addCell(h2);
+
+            PdfPCell h3 = new PdfPCell(new Paragraph("Total", encabezadoFont));
+            h3.setBackgroundColor(new BaseColor(36, 48, 166));
+            h3.setHorizontalAlignment(Element.ALIGN_CENTER);
+            h3.setBorderWidth(1.2f);
+            h3.setPadding(8);
+            tabla.addCell(h3);
+            
+            int contarFilas = 0;
+
+            // Agregar cada fila y columna
+            for(int fila=0;fila<100;fila++){
+                if(ventas[fila][0]!=null){
+                    
+                    String textoC1 = "";
+                    String[] codigoCantidadVendida = ventas[fila][0].split("\\|");
+                    
+                    int tamañoCantVend = codigoCantidadVendida.length;
+                    
+                    for(int fila2=0;fila2<tamañoCantVend;fila2++){
+                        String[] detalleTamañoCantVend = codigoCantidadVendida[fila2].split(",");
+                        
+                        textoC1=textoC1+
+                                "Código: "+detalleTamañoCantVend[0]+",   "+
+                                "Nombre: "+detalleTamañoCantVend[1]+",   "+
+                                "Cantidad: "+detalleTamañoCantVend[2]+"\n";
+                    }
+                            
+                    PdfPCell celdaCodigoNombreCantidad = new PdfPCell(new Phrase(textoC1, celdaFont));
+                    celdaCodigoNombreCantidad.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    celdaCodigoNombreCantidad.setPadding(5);
+                    tabla.addCell(celdaCodigoNombreCantidad);
+                    
+                    PdfPCell celdaFechaHora = new PdfPCell(new Phrase(ventas[fila][1], celdaFont));
+                    celdaFechaHora.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    celdaFechaHora.setPadding(5);
+                    tabla.addCell(celdaFechaHora);
+                    
+                    PdfPCell celdaTotal = new PdfPCell(new Phrase("Q "+ventas[fila][2], celdaFont));
+                    celdaTotal.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    celdaTotal.setPadding(5);
+                    tabla.addCell(celdaTotal);
+                    
+                    contarFilas++;
+                        
+                }
+            }
+            
+            // Añadir la tabla al documento
+            documento.add(tabla);
+            
+            if(contarFilas==0){
+                Paragraph sinProductos = new Paragraph("NO HAY VENTAS REGISTRADAS", textoFont2);
+                sinProductos.setSpacingAfter(15);
+                sinProductos.setAlignment(Element.ALIGN_CENTER);
+                documento.add(sinProductos);
+            }
+
+            System.out.println("Tabla generada con éxito.");
+            System.out.println("PDF creado en la siguiente ruta: " + rutaArchivo);
+            registrarBitacora(TIPOACCION_GENERAR,ACCION_CORRECTA,usuario,"INGRESÓ A LA OPCION 5, PDF VENTAS GENERADO");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            registrarBitacora(TIPOACCION_GENERAR,ACCION_ERRONEA,usuario,"INGRESÓ A LA OPCION 5, ERROR AL GENERAR PDF VENTAS");
+        } finally {
+            // Cerrar documento
+            if (documento.isOpen()) {
+                documento.close();
+            }
+        }
     }
     
     public void generarPdfStock(){
@@ -317,11 +445,11 @@ public class Principal {
 
             System.out.println("Tabla generada con éxito.");
             System.out.println("PDF creado en la siguiente ruta: " + rutaArchivo);
-            registrarBitacora(TIPOACCION_GENERAR,ACCION_CORRECTA,usuario,"PDF STOCK GENERADO");
+            registrarBitacora(TIPOACCION_GENERAR,ACCION_CORRECTA,usuario,"INGRESÓ A LA OPCION 5, PDF STOCK GENERADO");
 
         } catch (Exception e) {
             e.printStackTrace();
-            registrarBitacora(TIPOACCION_GENERAR,ACCION_ERRONEA,usuario,"ERROR AL GENERAR PDF STOCK");
+            registrarBitacora(TIPOACCION_GENERAR,ACCION_ERRONEA,usuario,"INGRESÓ A LA OPCION 5, ERROR AL GENERAR PDF STOCK");
         } finally {
             // Cerrar documento
             if (documento.isOpen()) {
@@ -453,16 +581,16 @@ public class Principal {
                             System.out.println("[?]   SE HA ALCANZADO EL CUPO MAXIMO DE ");
                             System.out.println("      VENTAS PARA ALMACENAR.             ");
                             System.out.println("+----------------------------------------+");
-                            registrarBitacora(TIPOACCION_REGISTRAR,ACCION_ERRONEA,usuario,"ESPACIO PARA ALMACENAR VENTAS ESTA LLENO");
+                            registrarBitacora(TIPOACCION_REGISTRAR,ACCION_ERRONEA,usuario,"INGRESÓ A LA OPCION 4, ESPACIO PARA ALMACENAR VENTAS ESTA LLENO");
                             break;
                         }
                         
-                        String cantProd=""; //Variable que va almacenar tanto el codigo del producto como su cantidad tambien.
+                        String cantProd=""; //Variable que va almacenar codigo,nombre, cantidad del producto.
                         
                         for(int fila=0;fila<100;fila++){
                             if(!carrito[fila][0].equals("-100")){
                                 int posicionProducto = buscarProducto(Integer.parseInt(carrito[fila][0]));
-                                cantProd=cantProd+carrito[fila][0]+","+carrito[fila][2]+"|";
+                                cantProd=cantProd+carrito[fila][0]+","+inventario[posicionProducto][1]+","+carrito[fila][2]+"|";
                                 inventario[posicionProducto][4] = String.valueOf(Integer.parseInt(inventario[posicionProducto][4])-Integer.parseInt(carrito[fila][2])); //Restar del inventario
                             }
                         }
@@ -473,14 +601,14 @@ public class Principal {
                         System.out.println("\n+----------------------------------------+");
                         System.out.println("|       LA VENTA HA SIDO REGISTRADA      |");
                         System.out.println("+----------------------------------------+");
-                        registrarBitacora(TIPOACCION_REGISTRAR,ACCION_CORRECTA,usuario,"PRODUCTOS: "+cantProd+"    "+"TOTAL: "+total );
+                        registrarBitacora(TIPOACCION_REGISTRAR,ACCION_CORRECTA,usuario,"INGRESÓ A LA OPCION 4, PRODUCTOS: "+cantProd+"    "+"TOTAL: "+total );
                         opcion=3;
                         
                     }else{
                         System.out.println("+----------------------------------------+");
                         System.out.println("[?]   NO SE HA AGREGADO NINGUN PRODUCTO.");
                         System.out.println("+----------------------------------------+");
-                        registrarBitacora(TIPOACCION_REGISTRAR,ACCION_ERRONEA,usuario,"SE INTENTO REGISTRAR VENTA SIN PRODUCTOS AGREGADOS");
+                        registrarBitacora(TIPOACCION_REGISTRAR,ACCION_ERRONEA,usuario,"INGRESÓ A LA OPCION 4, SE INTENTO REGISTRAR VENTA SIN PRODUCTOS AGREGADOS");
                     }
                     
                     
@@ -537,13 +665,13 @@ public class Principal {
                     encontrado=true;
                     System.out.println("+----------------------------------------+");
                     System.out.println("[-]    PRODUCTO ELIMINADO EXITOSAMENTE.");
-                    registrarBitacora(TIPOACCION_ELIMINAR,ACCION_CORRECTA,usuario,"CODIGO: "+codigo);
+                    registrarBitacora(TIPOACCION_ELIMINAR,ACCION_CORRECTA,usuario,"INGRESÓ A LA OPCION 3, CODIGO: "+codigo);
                     break;
                 }
                 
                 System.out.println("+----------------------------------------+");
                 System.out.println("[X]    ACCION CANCELADA.");
-                registrarBitacora(TIPOACCION_ELIMINAR,ACCION_ERRONEA,usuario,"EL USUARIO CANCELO LA ELIMINACION DEL PRODUCTO CON CODIGO: "+codigo);
+                registrarBitacora(TIPOACCION_ELIMINAR,ACCION_ERRONEA,usuario,"INGRESÓ A LA OPCION 3, EL USUARIO CANCELO LA ELIMINACION DEL PRODUCTO CON CODIGO: "+codigo);
                 return;
                 
             }
@@ -552,7 +680,7 @@ public class Principal {
             System.out.println("+----------------------------------------+");
             System.out.println("[?]   NO SE HA ENCONTRADO NINGUN PRODUCTO");
             System.out.println("      CON ESE CÓDIGO.");
-            registrarBitacora(TIPOACCION_ELIMINAR,ACCION_ERRONEA,usuario,"NINGUN PRODUCTO ENCONTRADO CON CODIGO: "+codigo);
+            registrarBitacora(TIPOACCION_ELIMINAR,ACCION_ERRONEA,usuario,"INGRESÓ A LA OPCION 3, NINGUN PRODUCTO ENCONTRADO CON CODIGO: "+codigo);
             return;
         }
         
@@ -600,14 +728,14 @@ public class Principal {
                         System.out.println("-    Precio: "+inventario[fila][3]);
                         System.out.println("-    Stock: "+inventario[fila][4]);
                         System.out.println("+----------------------------------------+");
-                        registrarBitacora(TIPOACCION_BUSCAR,ACCION_CORRECTA,usuario,"CODIGO: "+textoIngresado);
+                        registrarBitacora(TIPOACCION_BUSCAR,ACCION_CORRECTA,usuario,"INGRESÓ A LA OPCION 2, CODIGO: "+textoIngresado);
                         contador++;
                         break;
                     }
                 }
                 if(contador==0){
                     System.out.println("[?]   NO SE HA ENCONTRADO NINGUN PRODUCTO.");
-                    registrarBitacora(TIPOACCION_BUSCAR,ACCION_ERRONEA,usuario,"NINGUN PRODUCTO CON CODIGO: "+textoIngresado);
+                    registrarBitacora(TIPOACCION_BUSCAR,ACCION_ERRONEA,usuario,"INGRESÓ A LA OPCION 2, NINGUN PRODUCTO CON CODIGO: "+textoIngresado);
                     break;
                 }
                 break;
@@ -625,10 +753,10 @@ public class Principal {
                 }
                 if(contador==0){
                     System.out.println("[?]   NO SE HA ENCONTRADO NINGUN PRODUCTO.");
-                    registrarBitacora(TIPOACCION_BUSCAR,ACCION_ERRONEA,usuario,"NINGUN PRODUCTO CON NOMBRE: "+textoIngresado);
+                    registrarBitacora(TIPOACCION_BUSCAR,ACCION_ERRONEA,usuario,"INGRESÓ A LA OPCION 2, NINGUN PRODUCTO CON NOMBRE: "+textoIngresado);
                     break;
                 }
-                registrarBitacora(TIPOACCION_BUSCAR,ACCION_CORRECTA,usuario,"NOMBRE: "+textoIngresado);
+                registrarBitacora(TIPOACCION_BUSCAR,ACCION_CORRECTA,usuario,"INGRESÓ A LA OPCION 2, NOMBRE: "+textoIngresado);
                 break;
             case 3:
                 for (int fila=0;fila<100;fila++){
@@ -644,10 +772,10 @@ public class Principal {
                 }
                 if(contador==0){
                     System.out.println("[?]   NO SE HA ENCONTRADO NINGUN PRODUCTO.");
-                    registrarBitacora(TIPOACCION_BUSCAR,ACCION_ERRONEA,usuario,"NINGUN PRODUCTO CON CATEGORIA: "+textoIngresado);
+                    registrarBitacora(TIPOACCION_BUSCAR,ACCION_ERRONEA,usuario,"INGRESÓ A LA OPCION 2, NINGUN PRODUCTO CON CATEGORIA: "+textoIngresado);
                     break;
                 }
-                registrarBitacora(TIPOACCION_BUSCAR,ACCION_CORRECTA,usuario,"CATEGORIA: "+textoIngresado);
+                registrarBitacora(TIPOACCION_BUSCAR,ACCION_CORRECTA,usuario,"INGRESÓ A LA OPCION 2, CATEGORIA: "+textoIngresado);
                 break;
         }
     }
@@ -665,7 +793,7 @@ public class Principal {
         if(!espacioDisponible){
             System.out.println("+----------------------------------------+");
             System.out.println("[?]   INVENTARIO LLENO.");
-            registrarBitacora(TIPOACCION_AGREGAR,ACCION_ERRONEA,usuario,"INVENTARIO LLENO");
+            registrarBitacora(TIPOACCION_AGREGAR,ACCION_ERRONEA,usuario,"INGRESÓ A LA OPCION 1, INVENTARIO LLENO");
             return;
         }
         
@@ -686,12 +814,12 @@ public class Principal {
                     System.out.println("+----------------------------------------+");
                     System.out.println("[+]    PRODUCTO AGREGADO EXITOSAMENTE.");
                     System.out.println("       CON CÓDIGO: "+codigoUnico);
-                    registrarBitacora(TIPOACCION_AGREGAR,ACCION_CORRECTA,usuario,"CÓDIGO: "+codigoUnico);
+                    registrarBitacora(TIPOACCION_AGREGAR,ACCION_CORRECTA,usuario,"INGRESÓ A LA OPCION 1, CÓDIGO: "+codigoUnico);
                     return;
                 }
             }
         }
-        registrarBitacora(TIPOACCION_AGREGAR,ACCION_ERRONEA,usuario,"NÚMERO INGRESADO DE PRECIO/STOCK INVÁLIDO");
+        registrarBitacora(TIPOACCION_AGREGAR,ACCION_ERRONEA,usuario,"INGRESÓ A LA OPCION 1, NÚMERO INGRESADO DE PRECIO/STOCK INVÁLIDO");
         
     }
     
@@ -724,7 +852,7 @@ public class Principal {
         System.out.println("|           Programacion y Computacion 1 |");
         System.out.println("|    Sección: F                          |");
         System.out.println("+----------------------------------------+");
-        registrarBitacora(TIPOACCION_VER,ACCION_CORRECTA,usuario,"SE MOSTRÓ LA INFORMACIÓN DEL ESTUDIANTE");
+        registrarBitacora(TIPOACCION_VER,ACCION_CORRECTA,usuario,"INGRESÓ A LA OPCION 6, SE MOSTRÓ LA INFORMACIÓN DEL ESTUDIANTE");
     }
     
     public double validarPositivo(int mensaje, double numeroIngresado){
@@ -791,6 +919,7 @@ public class Principal {
                 System.out.print(mensaje);
                 String input = scanner.nextLine();
                 decimal = Double.parseDouble(input);
+                decimal = Math.round(decimal * 100.0) / 100.0; //Redondear dos decimales
                 valido = true;
             } catch (NumberFormatException e) {
                 System.out.println("[?]    ERROR: Debe ingresar un decimal válido. Porfavor ingresar un número válido.");
@@ -888,8 +1017,8 @@ public class Principal {
         System.out.println("| CODIGO Y CANTIDAD VENDIDA                 | FECHA Y HORA                           | TOTAL     |");
         System.out.println("+-----+-------------------------------------+----------------------------------------+-----------+");
         for (int fila=0;fila<100;fila++){
-            if(!(inventario[fila][0]!=null)){ //No se muestran las IDS 100, o sea las que no contienen datos.
-                System.out.printf("| %-24.24s | %-20.20s | %-10.10s | %n", 
+            if(ventas[fila][0]!=null){ //No se muestran las IDS 100, o sea las que no contienen datos.
+                System.out.printf("| %-44.44s | %-20.20s | %-10.10s | %n", 
                     ventas[fila][0],
                     ventas[fila][1],
                     ventas[fila][2]
