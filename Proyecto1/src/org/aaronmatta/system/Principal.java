@@ -809,7 +809,7 @@ public class Principal {
                 break;
             }
         }
-        
+
         if(!espacioDisponible){
             System.out.println("+----------------------------------------+");
             System.out.println("[?]   INVENTARIO LLENO.");

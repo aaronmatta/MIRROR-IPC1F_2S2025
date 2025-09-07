@@ -40,44 +40,37 @@ Un sistema de gestión de inventario  y ventas para una tienda de ropa desarroll
 
 3. Ejecutar `Principal.java`
 
-### Ejecutar desde terminal
 
-```bash
-# Compilar
-javac -cp .;itextpdf-5.5.10.jar org/aaronmatta/system/Principal.java
-
-# Ejecutar
-java -cp .;itextpdf-5.5.10.jar org.aaronmatta.system.Principal
-```
 
 ## Estructura de datos
 
 ### Inventario (capacidad: 100 productos)
-| Campo | Tipo | Descripción |
-| --- | --- | --- |
-| Código | String | Identificador único, autoincrementable |
-| Nombre | String | Nombre del producto |
-| Categoría | String | Categoría del producto |
-| Precio | String | Precio unitario |
-| Stock | String | Cantidad disponible |
+
+| Campo     | Tipo   | Descripción                            |
+| --------- | ------ | -------------------------------------- |
+| Código    | String | Identificador único, autoincrementable |
+| Nombre    | String | Nombre del producto                    |
+| Categoría | String | Categoría del producto                 |
+| Precio    | String | Precio unitario                        |
+| Stock     | String | Cantidad disponible                    |
 
 ### Ventas (capacidad: 100 transacciones)
 
-| Campo | Tipo | Descripción |
-| --- | --- | --- |
-| Detalles | String | Productos vendidos (código, nombre, cantidad) |
-| Fecha/Hora | String | Timestamp de la transacción |
-| Total | String | Monto total de la venta |
+| Campo      | Tipo   | Descripción                                   |
+| ---------- | ------ | --------------------------------------------- |
+| Detalles   | String | Productos vendidos (código, nombre, cantidad) |
+| Fecha/Hora | String | Timestamp de la transacción                   |
+| Total      | String | Monto total de la venta                       |
 
 ### Bitácora (capacidad: 200 registros)
 
-| Campo | Tipo | Descripción |
-| --- | --- | --- |
-| Fecha/Hora | String | Timestamp de la operación |
-| Tipo Acción | String | Tipo de acción realizada |
-| Resultado | String | Resultado (correcta/errónea) |
-| Usuario | String | Usuario que realizó la acción |
-| Mensaje | String | Detalles adicionales |
+| Campo       | Tipo   | Descripción                   |
+| ----------- | ------ | ----------------------------- |
+| Fecha/Hora  | String | Timestamp de la operación     |
+| Tipo Acción | String | Tipo de acción realizada      |
+| Resultado   | String | Resultado (correcta/errónea)  |
+| Usuario     | String | Usuario que realizó la acción |
+| Mensaje     | String | Detalles adicionales          |
 
 ## Vistas
 
@@ -186,7 +179,9 @@ java -cp .;itextpdf-5.5.10.jar org.aaronmatta.system.Principal
 ```
 
 ## Reportes PDF
+
 El sistema genera reportes en PDF con la siguiente información:
+
 - Encabezado con fecha de generación y información del usuario
 - Tablas detalladas con la información solicitada
 - Los archivos se guardan con el formato: `dd_MM_YYYY_HH_mm_ss_[Tipo].pdf`
@@ -198,8 +193,9 @@ El sistema genera reportes en PDF con la siguiente información:
 - Verificación de stock suficiente antes de registrar ventas
 - Control de duplicados en el inventario
 - Validación de existencia de productos antes de operaciones
-  
+
 ## Categorías disponibles
+
 1. Camisetas y blusas
 2. Pantalones y jeans
 3. Faldas y vestidos
@@ -210,8 +206,9 @@ El sistema genera reportes en PDF con la siguiente información:
 8. Accesorios
 9. Ropa deportiva
 10. Ropa de dormir
-  
+
 ## Limitaciones conocidas
+
 - Los datos se almacenan en memoria durante la ejecución (no persisten al cerrar)
 - Capacidad limitada a 100 productos y 100 ventas
 - La ruta de guardado de PDFs es fija.
