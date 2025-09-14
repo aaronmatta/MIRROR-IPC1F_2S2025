@@ -204,10 +204,13 @@ public class Principal {
     public int ingresarValidarCategorias(){
         int categoriaIngresada;
         do{
+            // Mostrar lista de categorías disponibles
             for(int i=0;i<categorias.length;i++){
                 System.out.println("      "+(i+1)+". "+categorias[i]);
             }
             categoriaIngresada = ingresarEntero("*    Categoría: ");
+            
+            // Validar que la opción este dentro del rango de categorías
             if(!(categoriaIngresada<=(categorias.length) && categoriaIngresada>0)){
                 System.out.println("\n[?]    ERROR: Por favor ingrese un número entre 1 y " + categorias.length);
             }
@@ -230,7 +233,7 @@ public class Principal {
 
             documento.open();
             
-            // Estilos
+            // Estilos de fuente
             Font tituloFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, BaseColor.DARK_GRAY);
             Font textoFont1 = FontFactory.getFont(FontFactory.HELVETICA, 9, BaseColor.GRAY);
             Font textoFont2 = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14, BaseColor.RED);
@@ -249,7 +252,7 @@ public class Principal {
             informacion.setSpacingAfter(15);
             documento.add(informacion);
             
-            // Crear la tabla
+            // Crear la tabla con 3 columnas
             PdfPTable tabla = new PdfPTable(3);
             float[] anchosColumnas = {7f, 2f, 1f};
             tabla.setWidthPercentage(100);
@@ -279,15 +282,18 @@ public class Principal {
             
             int contarFilas = 0;
 
-            // Agregar cada fila y columna
+            // Registrar cada venta en su respectiva fila y columna
             for(int fila=0;fila<100;fila++){
                 if(ventas[fila][0]!=null){
                     
                     String textoC1 = "";
+                    
+                    // Separar los productos de la venta (formato: codigo,nombre,cantidad|...)
                     String[] codigoCantidadVendida = ventas[fila][0].split("\\|");
                     
                     int tamañoCantVend = codigoCantidadVendida.length;
                     
+                    // Agregando cada detalle del producto de la venta
                     for(int fila2=0;fila2<tamañoCantVend;fila2++){
                         String[] detalleTamañoCantVend = codigoCantidadVendida[fila2].split(",");
                         
@@ -320,6 +326,7 @@ public class Principal {
             // Añadir la tabla al documento
             documento.add(tabla);
             
+            //Mensaje si no hay ventas
             if(contarFilas==0){
                 Paragraph sinProductos = new Paragraph("NO HAY VENTAS REGISTRADAS", textoFont2);
                 sinProductos.setSpacingAfter(15);
@@ -357,7 +364,7 @@ public class Principal {
 
             documento.open();
             
-            // Estilos
+            // Estilos de fuente
             Font tituloFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, BaseColor.DARK_GRAY);
             Font textoFont1 = FontFactory.getFont(FontFactory.HELVETICA, 9, BaseColor.GRAY);
             Font textoFont2 = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14, BaseColor.RED);
@@ -376,7 +383,7 @@ public class Principal {
             informacion.setSpacingAfter(15);
             documento.add(informacion);
             
-            // Crear la tabla
+            // Crear la tabla con 5 columnas
             PdfPTable tabla = new PdfPTable(5);
             float[] anchosColumnas = {1f, 3f, 2f, 1.5f, 1.5f};
             tabla.setWidthPercentage(100);
@@ -420,9 +427,9 @@ public class Principal {
             
             int contarFilas = 0;
 
-            // Agregar cada fila y columna
+            // Agregar cada producto a la tabla
             for(int fila=0;fila<100;fila++){
-                if(!inventario[fila][0].equals("-100")){
+                if(!inventario[fila][0].equals("-100")){ //Agrega solamente los espacios con productos
                     contarFilas++;
                     
                     PdfPCell celdaCodigo = new PdfPCell(new Phrase(inventario[fila][0], celdaFont));
@@ -456,6 +463,7 @@ public class Principal {
             // Añadir la tabla al documento
             documento.add(tabla);
             
+            //Mensaje si no hay productos
             if(contarFilas==0){
                 Paragraph sinProductos = new Paragraph("NO HAY PRODUCTOS AGREGADOS EN EL INVENTARIO.", textoFont2);
                 sinProductos.setSpacingAfter(15);
@@ -481,6 +489,7 @@ public class Principal {
     public void registrarBitacora(String tipoAccion, String accion, String usuario, String mensaje){
         String fecha = generarFechaHoraActual();
         int posicion = generarCodigoUnicoBitacora();
+         // Verifica que la bitacora no se encuentre llena
         if(!(posicion>200)){
             bitacora[posicion][0]= fecha;
             bitacora[posicion][1]= tipoAccion;
@@ -493,7 +502,7 @@ public class Principal {
     public void registrarVenta() {
         
         String[][] carrito = new String[100][4];
-        carrito = generarEspaciosVaciosCarrito(carrito);
+        carrito = generarEspaciosVaciosCarrito(carrito); // Inicializar carrito con valores valores vacios y no que digan NULL
         
         int contador = 0, existeId = 0;
         double total = 0.00, monto = 0.00;
@@ -508,6 +517,7 @@ public class Principal {
             System.out.println("|     3. Cancelar                        | | CÓD | PRODUCTO              | CANT  | MONTO        | |");
             System.out.println("|                                        | +-----+-----------------------+-------+--------------+ |");
             if(total!=0){
+                // Mostrar productos en el carrito
                 for(int fila=0;fila<100;fila++){
                     if(!(carrito[fila][0].equals("-100"))){
                         System.out.printf("|                                        | | %-3.3s | %-21.21s | %-5.5s | %-12.12s | |%n", carrito[fila][0], carrito[fila][1], carrito[fila][2], carrito[fila][3]);
@@ -531,7 +541,7 @@ public class Principal {
                     System.out.println("+----------------------------------------+");
                     codigoUnico = ingresarEntero("*    Código: ");
                     System.out.println("+----------------------------------------+");
-                    existeId = buscarProducto(codigoUnico);
+                    existeId = buscarProducto(codigoUnico); // Buscar producto en inventario
                     
                     if(existeId!=-100){
                         System.out.println("-    Nombre: "+inventario[existeId][1]);
@@ -550,6 +560,7 @@ public class Principal {
                                 
                                 if(validarStock(existeId, tempCantidad)){
                                     
+                                    // Actualizar cantidad y monto en carrito
                                     monto = Double.parseDouble(inventario[existeId][3])*cantidad;
                                     total = total + monto;
                                     cantidad = cantidad+Integer.parseInt(carrito[fila][2]);
@@ -566,7 +577,8 @@ public class Principal {
                             }
                         }
                         
-                        if(repetido==false && validarStock(existeId, cantidad)){ //Agrega una nueva columna al producto nuevo.
+                        // Agregar nuevo producto al carrito si no estaba repetido
+                        if(repetido==false && validarStock(existeId, cantidad)){
                             
                             monto = Double.parseDouble(inventario[existeId][3])*cantidad;
                             total = total + monto;
@@ -592,6 +604,7 @@ public class Principal {
                     break;
                 case 2:
                     if(total!=0){
+                         // Registro y finalización de la venta
                         
                         String fecha = generarFechaHoraActual();
                         int posicion = generarCodigoUnicoVenta();
@@ -610,10 +623,14 @@ public class Principal {
                         for(int fila=0;fila<100;fila++){
                             if(!carrito[fila][0].equals("-100")){
                                 int posicionProducto = buscarProducto(Integer.parseInt(carrito[fila][0]));
+                                
+                                // Actualizar inventario y preparar registro de venta
                                 cantProd=cantProd+carrito[fila][0]+","+inventario[posicionProducto][1]+","+carrito[fila][2]+"|";
                                 inventario[posicionProducto][4] = String.valueOf(Integer.parseInt(inventario[posicionProducto][4])-Integer.parseInt(carrito[fila][2])); //Restar del inventario
                             }
                         }
+                        
+                         // Registrar venta en el array de ventas
                         ventas[posicion][0] = cantProd;
                         ventas[posicion][1] = fecha;
                         ventas[posicion][2] = String.valueOf(total);
@@ -622,7 +639,7 @@ public class Principal {
                         System.out.println("|       LA VENTA HA SIDO REGISTRADA      |");
                         System.out.println("+----------------------------------------+");
                         registrarBitacora(TIPOACCION_REGISTRAR,ACCION_CORRECTA,usuario,"INGRESÓ A LA OPCION 4, PRODUCTOS: "+cantProd+"    "+"TOTAL: "+total );
-                        opcion=3;
+                        opcion=3; //Para salir del bucle al registrar la venta
                         
                     }else{
                         System.out.println("+----------------------------------------+");
@@ -636,12 +653,14 @@ public class Principal {
                 case 3:
                     break;
                 default:
+                    System.out.println("\n[?]    INGRESE UNA DE LAS OPCIONES VÁLIDAS.");
                     break;
             }
         }while(opcion!=3);
     }
     
     public boolean validarStock(int codProdInventario, int cantidadVenta){
+        // Verificar si hay suficiente stock para la venta
         if(Integer.parseInt(inventario[codProdInventario][4])<cantidadVenta){
             System.out.println("[X]    STOCK INSUFICIENTE PARA: "+cantidadVenta+" UNIDADES,");
             System.out.println("       CONTAMOS CON: "+inventario[codProdInventario][4]+" UNIDADES.");
@@ -651,12 +670,13 @@ public class Principal {
     }
     
     public int buscarProducto(int codigo){
+        // Buscar producto por código en el inventario
         for (int fila=0;fila<100;fila++){
             if(inventario[fila][0].equals(String.valueOf(codigo))){ //Si el ID es encontrado retorna la posicion donde se encuentra
-                return fila;
+                return fila; // Retorna posición si encuentra coincidencia
             }
         }
-        return -100;
+        return -100; // Valor de retorno de error cuando no se encuentra
     }
     
     public void eliminarProducto(int codigo){
@@ -664,6 +684,7 @@ public class Principal {
         for(int fila=0;fila<100;fila++){
             if(inventario[fila][0].equals(String.valueOf(codigo))){
                 
+                // Confirmacion de eliminacion
                 System.out.println("+----------------------------------------+");
                 System.out.println("[✓]    ESTAS SEGURO DE ELIMINAR EL");
                 System.out.println("       PRODUCTO "+inventario[fila][1]+", ");
@@ -674,13 +695,14 @@ public class Principal {
                 
                 if(inventario[fila][0].equals(String.valueOf(codigoUnico))){
                     
+                    // Marcar producto como eliminado usando el valor por defecto (-100) en la seccion de CODIGO para indicar que está vacio
                     inventario[fila][0] = "-100";
                     inventario[fila][1] = "VACIO";
                     inventario[fila][2] = "VACIO";
                     inventario[fila][3] = "VACIO";
                     inventario[fila][4] = "VACIO";
                     
-                    ordenarProductos();
+                    ordenarProductos(); // Reorganizar inventario
                     
                     encontrado=true;
                     System.out.println("+----------------------------------------+");
@@ -707,8 +729,11 @@ public class Principal {
     }
     
     public void ordenarProductos(){
+        //Nuevo arreglo temporal para reorganizar
         String[][] nuevoInventario = new String[100][5];
         int contador = 0;
+        
+        // Copiar las posiciones con productos existentes (ignoran las casillas vacias)
         for(int fila=0;fila<100;fila++){
             if(!(inventario[fila][0].equals("-100"))){
                 nuevoInventario[contador][0] = inventario[fila][0];
@@ -719,6 +744,8 @@ public class Principal {
                 contador++;
             }
         }
+        
+         // Llenar las posiciones restantes (ultimas) con valores por defecto
         for(int fila=contador;fila<100;fila++){
             nuevoInventario[fila][0] = "-100";
             nuevoInventario[fila][1] = "VACIO";
@@ -726,6 +753,8 @@ public class Principal {
             nuevoInventario[fila][3] = "VACIO";
             nuevoInventario[fila][4] = "VACIO";
         }
+        
+        // Reemplazar el inventario original con el nuevo inventario reorganizado
         for(int fila=0;fila<100;fila++){
             inventario[fila][0] = nuevoInventario[fila][0];
             inventario[fila][1]=nuevoInventario[fila][1];
@@ -739,7 +768,7 @@ public class Principal {
     public void verProducto(int opcion, String textoIngresado){
         int contador = 0;
         switch(opcion){
-            case 1:
+            case 1: //Busqueda por codigo
                 for (int fila=0;fila<100;fila++){
                     if(inventario[fila][0].equals(String.valueOf(textoIngresado))){ //Si el CODIGO es encontrado muestra los datos en esa posicion
                         System.out.println("-    Código: "+inventario[fila][0]);
@@ -750,7 +779,7 @@ public class Principal {
                         System.out.println("+----------------------------------------+");
                         registrarBitacora(TIPOACCION_BUSCAR,ACCION_CORRECTA,usuario,"INGRESÓ A LA OPCION 2, CODIGO: "+textoIngresado);
                         contador++;
-                        break;
+                        break; // Sale del for al encontrar el codigo ya que son unicos.
                     }
                 }
                 if(contador==0){
@@ -759,7 +788,7 @@ public class Principal {
                     break;
                 }
                 break;
-            case 2:
+            case 2: //Busqueda por nombre
                 for (int fila=0;fila<100;fila++){
                     if(inventario[fila][1].equals(String.valueOf(textoIngresado))){ //Si el NOMBRE coincide muestra los datos en esa posicion
                         System.out.println("-    Código: "+inventario[fila][0]);
@@ -778,7 +807,7 @@ public class Principal {
                 }
                 registrarBitacora(TIPOACCION_BUSCAR,ACCION_CORRECTA,usuario,"INGRESÓ A LA OPCION 2, NOMBRE: "+textoIngresado);
                 break;
-            case 3:
+            case 3: //Busqueda por categoria
                 for (int fila=0;fila<100;fila++){
                     if(inventario[fila][2].equals(String.valueOf(textoIngresado))){ //Si la CATEGORIA coincide muestra los datos en esa posicion
                         System.out.println("-    Código: "+inventario[fila][0]);
@@ -802,6 +831,7 @@ public class Principal {
 
     public void agregarProducto(String nombre, String categoria, double precio, int cantidadStock){
         
+        // Buscar espacio disponible en el inventario
         boolean espacioDisponible = false;
         for(int fila=0;fila<100;fila++){
             if(inventario[fila][0].equals("-100")){
@@ -810,6 +840,7 @@ public class Principal {
             }
         }
 
+        // Verificar si hay espacio en el inventario
         if(!espacioDisponible){
             System.out.println("+----------------------------------------+");
             System.out.println("[?]   INVENTARIO LLENO.");
@@ -817,13 +848,16 @@ public class Principal {
             return;
         }
         
+        // Validar que precio y stock sean valores positivos
         double confirmarPrecio = validarPositivo(1,precio);
         int confirmarStock = (int) validarPositivo(2,cantidadStock);
         
+        // Si las validaciones son exitosas
         if( confirmarPrecio != -100 && confirmarStock != -100){
             
             codigoUnico = generarCodigoUnicoProducto();
             
+            // Buscar posicion vacia y agregar producto
             for(int fila=0;fila<100;fila++){
                 if(inventario[fila][0].equals("-100")){
                     inventario[fila][0] = String.valueOf(codigoUnico);
@@ -878,9 +912,9 @@ public class Principal {
     public double validarPositivo(int mensaje, double numeroIngresado){
         if(numeroIngresado>=0){
             
-            return numeroIngresado;   
+            return numeroIngresado;  // Retorna el valor si es positivo 
             
-        }else{
+        }else{ // Selecciona mensaje de error según el código recibido
             if(mensaje==1){
                 System.out.println("[?]   EL PRECIO NO PUEDE SER NEGATIVO.");
             }
@@ -891,7 +925,7 @@ public class Principal {
                 System.out.println("[?]   EL NÚMERO NO PUEDE SER NEGATIVO.");
             }
         }
-        return -100;
+        return -100; // Valor de retorno de error cuando falla la validacion
     }
     
     public int ingresarEntero(String mensaje) {
@@ -952,7 +986,7 @@ public class Principal {
     public void generarEspaciosVaciosInventario(){
         for (int fila=0;fila<100;fila++){
             inventario[fila][0] = "-100";
-            for (int col=1;col<5;col++){ //Empieza en 1, porque la seccion de ID ya la modifico arriba.
+            for (int col=1;col<5;col++){ //Empieza en 1, porque la seccion de CODIGO ya la modifico arriba.
                 inventario[fila][col] = "VACIO";
             }
         }
@@ -961,7 +995,7 @@ public class Principal {
     public String[][] generarEspaciosVaciosCarrito(String [][] carrito){
         for (int fila=0;fila<100;fila++){
             carrito[fila][0] = "-100";
-            for (int col=1;col<4;col++){ //Empieza en 1, porque la seccion de ID ya la modifico arriba.
+            for (int col=1;col<4;col++){ //Empieza en 1, porque la seccion de los PRODUCTOS ya la modifico arriba.
                 carrito[fila][col] = "VACIO";
             }
         }
